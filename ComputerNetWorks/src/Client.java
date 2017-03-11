@@ -112,7 +112,6 @@ public class Client {
 	private void handle(int code, String host, int port, BufferedReader inFromServer) throws Exception {
 		if (code == 200) {
 			System.out.println("OK");
-			printServerBuffer(inFromServer);
 			clientSocket.close();
 		}
 		else if (code == 302) {
@@ -155,14 +154,10 @@ public class Client {
 	}
 	
 	private static void printServerBuffer(BufferedReader buffer) throws IOException, URISyntaxException {
-		File file = new File("webPage.txt");
-		BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file)));
 		String line;
 		while ((line = buffer.readLine()) != null) {
-			bw.write(line+"\r\n");
 			System.out.println("FROM SERVER: " + line);
 		}
-		bw.close();
 		System.out.println("Done printing!");
 	}
 	
