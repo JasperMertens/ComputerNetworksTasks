@@ -1,3 +1,4 @@
+package client;
 import java.io.*;
 import java.net.*;
 import java.nio.file.Path;
@@ -5,6 +6,7 @@ import java.nio.file.Paths;
 
 public class Client {
 	
+	public final static String FILE_SEP = System.getProperty("file.separator");
 	private Socket clientSocket;
 	private BufferedReader inFromServer;
 	private DataOutputStream outToServer;
@@ -77,8 +79,8 @@ public class Client {
 
 	private void get(URL uri, String host, int port) throws Exception {
 		outToServer.writeBytes("GET " + uri.getFile() + "\r\n" + "Host: " + host + ":" + port + "\r\n\r\n");
-		writeToFile(inFromServer);
-		int code = getCode("webPage.txt");
+//		writeToFile(inFromServer);
+		int code = getCode(inFromServer);
 		handle(code, host, port, inFromServer);
 	}
 
@@ -112,11 +114,12 @@ public class Client {
 	private void handle(int code, String host, int port, BufferedReader inFromServer) throws Exception {
 		if (code == 200) {
 			System.out.println("OK");
+			printAndWriteToFile(inFromServer);
 			clientSocket.close();
 		}
 		else if (code == 302) {
 			System.out.println("Redirecting to the right page");
-			String location = getLocation("webPage.txt");
+			String location = getLocation(inFromServer);
 			URL locationUri = new URL(location);
 			String newHost = locationUri.getHost();
 			resetSocket(newHost, port);
@@ -128,18 +131,18 @@ public class Client {
 		}
 	}
 	
-	private static int getCode(String fileName) throws IOException {
-		BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(fileName)));
+	private static int getCode(BufferedReader br) throws IOException {
+		br.mark(100);
 		String firstLine = br.readLine();
+		br.reset();
 		System.out.println("first line: "+ firstLine);
-		br.close();
 		String result = firstLine.substring(9, 12);
 		System.out.println("Received code: "+ result);
 		return Integer.parseInt(result);
 	}
 	
-	private static String getLocation(String fileName) throws Exception {
-		BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(fileName)));
+	private static String getLocation(BufferedReader br) throws Exception {
+		br.mark(100);
 		String line;
 		while ((line = br.readLine()) != null) {
 			System.out.println("FROM SERVER: "+line);
@@ -147,30 +150,50 @@ public class Client {
 				int beginIndex = line.indexOf("Location: ") + 10;
 				String result = line.substring(beginIndex);
 				System.out.println("LOCATION FOUND: "+result);
+				br.reset();
 				return result;
 			}
 		}
-		throw new Exception();
+		throw new Exception("No location found");
 	}
 	
-	private static void printServerBuffer(BufferedReader buffer) throws IOException, URISyntaxException {
-		String line;
-		while ((line = buffer.readLine()) != null) {
-			System.out.println("FROM SERVER: " + line);
-		}
-		System.out.println("Done printing!");
-	}
+//	private static void printBuffer(BufferedReader buffer) throws IOException, URISyntaxException {
+//		String line;
+//		while ((line = buffer.readLine()) != null) {
+//			System.out.println("FROM SERVER: " + line);
+//		}
+//		System.out.println("Done printing!");
+//	}
+//	
+//	private void writeToFile(BufferedReader input) throws IOException {
+//		File file = new File("webPage.txt");
+//		System.out.println("path: "+file.getPath());
+//		BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file)));
+//		String line;
+//		while ((line = input.readLine()) != null) {
+//			bw.write(line+"\r\n");
+//		}
+//		bw.close();
+//		System.out.println("Written to file.");
+//	}
 	
-	private void writeToFile(BufferedReader input) throws IOException {
-		File file = new File("webPage.txt");
+	private void printAndWriteToFile(BufferedReader br) throws IOException {
+		String path = System.getProperty("user.dir")+FILE_SEP+"src"+FILE_SEP+"client"+FILE_SEP+"webPage.txt";
+		File file = new File(path);
 		System.out.println("path: "+file.getPath());
+		if (file.createNewFile()) {
+			System.out.println("File is created!");
+		} else {
+			System.out.println("File already existed!");
+		}
 		BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file)));
 		String line;
-		while ((line = input.readLine()) != null) {
+		while ((line = br.readLine()) != null) {
+			System.out.println("FROM SERVER: " + line);
 			bw.write(line+"\r\n");
 		}
 		bw.close();
+		br.close();
 		System.out.println("Written to file.");
 	}
-	
 }
