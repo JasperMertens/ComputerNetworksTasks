@@ -16,7 +16,7 @@ public class Client {
 	}
 	
 	public static void main(String[] args) {
-		String[] testArgs = {"GET", "http://www.google.com/index.html", "80"};
+		String[] testArgs = {"HEAD", "http://www.google.com/index.html", "80"};
 		try {
 			if (testArgs.length != 3)
 				throw new IllegalArgumentException("Wrong number of arguments!");
@@ -46,7 +46,7 @@ public class Client {
 			System.out.println("trying get");
 			get(uri, host, port);
 		} else if (command.equals("HEAD")) {
-			head(uri, port);
+			head(uri, host, port);
 		} else if (command.equals("PUT")) {
 			put(uri, port);
 		} else if (command.equals("POST")) {
@@ -72,16 +72,19 @@ public class Client {
 		
 	}
 
-	private static void head(URL uri, int port) {
-		// TODO Auto-generated method stub
-		
-	}
-
 	private void get(URL uri, String host, int port) throws Exception {
-		outToServer.writeBytes("GET " + uri.getFile() + "\r\n" + "Host: " + host + ":" + port + "\r\n\r\n");
+		outToServer.writeBytes("GET " + uri.getFile() + " HTTP/1.1" + "\r\n" + "Host: " + host + ":" + port + "\r\n\r\n");
 //		writeToFile(inFromServer);
 		int code = getCode(inFromServer);
-		handle(code, host, port, inFromServer);
+		handle("GET", code, host, port, inFromServer);
+	}
+	
+	private void head(URL uri, String host, int port) throws Exception {
+		String str = "HEAD " + uri.getFile() + " HTTP/1.1" + "\r\n" + "Host: " + host + ":" + port + "\r\n\r\n";
+		System.out.println("query: " + str);
+		outToServer.writeBytes(str);
+		int code = getCode(inFromServer);
+		handle("HEAD", code, host, port, inFromServer);
 	}
 
 //	private static void get2() throws IOException {
@@ -111,7 +114,7 @@ public class Client {
 //		// clientSocket.close();
 //	}
 	
-	private void handle(int code, String host, int port, BufferedReader inFromServer) throws Exception {
+	private void handle(String command, int code, String host, int port, BufferedReader inFromServer) throws Exception {
 		if (code == 200) {
 			System.out.println("OK");
 			printAndWriteToFile(inFromServer);
@@ -123,7 +126,10 @@ public class Client {
 			URL locationUri = new URL(location);
 			String newHost = locationUri.getHost();
 			resetSocket(newHost, port);
-			get(locationUri, newHost, port);
+			if (command == "GET")
+				get(locationUri, newHost, port);
+			else if (command == "HEAD")
+				head(locationUri, newHost, port);
 		}
 		else {
 			System.out.println("Unknown code: "+ code);
