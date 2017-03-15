@@ -1,7 +1,9 @@
 package http_commands;
 
+import java.io.*;
+
 public interface Command {
 	
-	public String getResponse();
+	public void getResponse(DataOutputStream outToClient) throws IOException;
 
 }

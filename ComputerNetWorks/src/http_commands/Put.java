@@ -1,5 +1,8 @@
 package http_commands;
 
+import java.io.DataOutputStream;
+import java.io.IOException;
+
 public class Put implements Command {
 
 	public Put() {
@@ -7,9 +10,9 @@ public class Put implements Command {
 	}
 
 	@Override
-	public String getResponse() {
+	public void getResponse(DataOutputStream outToClient) throws IOException {
 		// TODO Auto-generated method stub
-		return null;
+		
 	}
 
 }

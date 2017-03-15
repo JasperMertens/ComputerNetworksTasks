@@ -1,16 +1,23 @@
 package http_commands;
 
+import java.io.*;
+
 public class Get implements Command {
 
-	public Get() {
-		// TODO Auto-generated constructor stub
+	private File file;
+
+	public Get(File file) {
+		this.file = file;
 	}
 
 	@Override
-	public String getResponse() {
-		return null;
-		// TODO Auto-generated method stub
-
+	public void getResponse(DataOutputStream outToClient) throws IOException {
+		outToClient.writeBytes("HTTP/1.1 200 OK");
+		BufferedReader br = new BufferedReader(new FileReader(file));
+		String line;
+		while ((line = br.readLine()) != null) {
+			outToClient.writeBytes(line);
+		}
 	}
 
 }
