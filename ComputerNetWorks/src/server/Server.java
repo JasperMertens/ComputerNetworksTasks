@@ -7,16 +7,19 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 public class Server {
+	
+	private static int nbOfClients = 0;
+	public static final int MAX_NB_OF_CLIENTS = 5;
+
 	public static void main(String argv[]) throws Exception {
 		ServerSocket welcomeSocket = new ServerSocket(6789);
 		while (true) {
-			Socket connectionSocket = welcomeSocket.accept();
-			BufferedReader inFromClient = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
-			DataOutputStream outToClient = new DataOutputStream(connectionSocket.getOutputStream());
-			String clientSentence = inFromClient.readLine();
-			System.out.println("Received: " + clientSentence);
-			String capsSentence = clientSentence.toUpperCase() + '\n';
-			outToClient.writeBytes(capsSentence);
+			if (nbOfClients < MAX_NB_OF_CLIENTS) {
+				Socket connectionSocket = welcomeSocket.accept();
+				nbOfClients += 1;
+				Thread t = new Thread(new ProcessingModule(connectionSocket));
+				t.start();
+			}
 		}
 	}
 }

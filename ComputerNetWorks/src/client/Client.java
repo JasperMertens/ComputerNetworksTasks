@@ -3,8 +3,10 @@ package client;
 
 import java.io.*;
 import java.net.*;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 public class Client {
 	
@@ -18,7 +20,7 @@ public class Client {
 	}
 	
 	public static void main(String[] args) {
-		String[] testArgs = {"HEAD", "http://www.google.com/index.html", "80"};
+		String[] testArgs = {"GET", "http://www.tcpipguide.com/index.htm", "80"};
 		try {
 			if (testArgs.length != 3)
 				throw new IllegalArgumentException("Wrong number of arguments!");
@@ -76,7 +78,6 @@ public class Client {
 
 	private void get(URL uri, String host, int port) throws Exception {
 		outToServer.writeBytes("GET " + uri.getFile() + " HTTP/1.1" + "\r\n" + "Host: " + host + ":" + port + "\r\n\r\n");
-//		writeToFile(inFromServer);
 		int code = getCode(inFromServer);
 		handle("GET", code, host, port, inFromServer);
 	}
@@ -119,7 +120,7 @@ public class Client {
 	private void handle(String command, int code, String host, int port, BufferedReader inFromServer) throws Exception {
 		if (code == 200) {
 			System.out.println("OK");
-			printAndWriteToFile(inFromServer);
+			printAndWriteToFile(inFromServer, host, port);
 			clientSocket.close();
 		}
 		else if (code == 302) {
@@ -185,7 +186,7 @@ public class Client {
 //		System.out.println("Written to file.");
 //	}
 	
-	private void printAndWriteToFile(BufferedReader br) throws IOException {
+	private void printAndWriteToFile(BufferedReader br, String host, int port) throws Exception {
 		String path = System.getProperty("user.dir")+FILE_SEP+"src"+FILE_SEP+"client"+FILE_SEP+"webPage.txt";
 		File file = new File(path);
 		System.out.println("path: "+file.getPath());
@@ -198,10 +199,29 @@ public class Client {
 		String line;
 		while ((line = br.readLine()) != null) {
 			System.out.println("FROM SERVER: " + line);
+			Document doc = Jsoup.parse(line, host);
+			Elements imgs = doc.select("img");
+			if (!imgs.isEmpty()) {
+				for (Element img: imgs) {
+					String url = "http://"+ host + "/" + img.attr("src");
+					System.out.println(url);
+					outToServer.writeBytes("GET " + url + " HTTP/1.1" + "\r\n" + "Host: " + host + ":" + port + "\r\n\r\n");
+				}
+			}
 			bw.write(line+"\r\n");
 		}
 		bw.close();
 		br.close();
 		System.out.println("Written to file.");
 	}
+	
+//	private void getImages() throws Exception{
+//		File input = new File("webPage.html");
+//		Document doc = Jsoup.parse(input, "UTF-8", "http://www.tcpipguide.com");
+//		Elements images = doc.select("img");
+//		int i = 0;
+//		for (Element image : images){
+//			System.out.println(image.attr("src"));		
+//		}
+//	}
 }

@@ -1,3 +1,8 @@
 webPage.txt
 *.class
 /bin/
+<<<<<<< HEAD
+=======
+
+ComputerNetworks/.classpath
+>>>>>>> ParserBranch
