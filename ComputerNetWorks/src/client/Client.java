@@ -16,7 +16,7 @@ public class Client {
 	}
 	
 	public static void main(String[] args) {
-		String[] testArgs = {"GET", "http://www.google.com/index.html", "80"};
+		String[] testArgs = {"GET", "localhost", "6789"};
 		try {
 			if (testArgs.length != 3)
 				throw new IllegalArgumentException("Wrong number of arguments!");
