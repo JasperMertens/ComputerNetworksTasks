@@ -2,5 +2,6 @@
 webPage.txt
 *.class
 /bin/
-ComputerNetworks/.classpath
+.classpath
+.project
 

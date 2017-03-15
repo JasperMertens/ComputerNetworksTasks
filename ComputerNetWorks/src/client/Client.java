@@ -12,6 +12,7 @@ public class Client {
 	private Socket clientSocket;
 	private BufferedReader inFromServer;
 	private DataOutputStream outToServer;
+	private boolean bufferBusy;
 
 	public Client(String host, int port) throws UnknownHostException, IOException {
 		resetSocket(host, port);
@@ -70,7 +71,11 @@ public class Client {
 	}
 
 	private void get(URL uri, String host, int port) throws Exception {
+		System.out.println("get : "+ "GET " + uri.getFile() + " HTTP/1.1" + "\r\n" + "Host: " + host + ":" + port + "\r\n\r\n");
 		outToServer.writeBytes("GET " + uri.getFile() + " HTTP/1.1" + "\r\n" + "Host: " + host + ":" + port + "\r\n\r\n");
+		while (bufferBusy) {
+//			wait
+		}
 		int code = getCode(inFromServer);
 		handle("GET", uri, code, host, port, inFromServer);
 	}
@@ -104,7 +109,7 @@ public class Client {
 //				String serverResponse;
 //				while ((serverResponse = inFromServer2.readLine()) != null) {
 //					System.out.println("FROM SERVER: " + serverResponse);
-//				}
+//				}arg0
 //			}
 //		}
 //		// clientSocket.close();
@@ -189,16 +194,28 @@ public class Client {
 			System.out.println("File already existed!");
 		}
 		BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file)));
+		int count = 0;
+		bufferBusy = true;
+		int Clength = 200;
 		String line;
 		while ((line = br.readLine()) != null) {
-//			System.out.println("FROM SERVER: " + line);
+			System.out.println("FROM SERVER: " + line);
+			if (line.contains("Content-Length:")) {
+				String[] ClengthAr = line.split("Content-Length: ");
+				Clength = Integer.parseInt(ClengthAr[1]);
+			}
+			count += line.getBytes().length;
+			if (count >= Clength) {
+				bufferBusy = false;
+			}
 			Document doc = Jsoup.parse(line, host);
 			Elements imgs = doc.select("img");
 			if (!imgs.isEmpty()) {
 				for (Element img: imgs) {
 					String src = img.attr("src");
 					System.out.println(src);
-					if (img.attr("href") != null) {
+					if (src.substring(0, 4).equals("http")) {
+						System.out.println("CONTINUE: "+img.attr("href"));
 						continue;
 					}
 					String urlString = host + "/" + src;
@@ -206,20 +223,29 @@ public class Client {
 					URL url = new URL("http://"+urlString);
 //					System.out.println("query: "+url.getQuery());
 					String p = System.getProperty("user.dir")+FILE_SEP+"src"+FILE_SEP+"client"+FILE_SEP+src;
-					File f = new File(p);
+					File targetFile = new File(p);
+					File directory = new File(targetFile.getParentFile().getAbsolutePath());
+					directory.mkdirs();
+					new File(p);
+//					File parent = targetFile.getParentFile();
+//					if (!parent.exists() && !parent.mkdirs()) {
+//					    throw new IllegalStateException("Couldn't create dir: " + parent);
+//					}
+//					targetFile.createNewFile();
 					System.out.println("path: "+p);
-					if (file.createNewFile()) {
-						System.out.println("File is created!");
-					} else {
-						System.out.println("File already existed!");
-					}
-					outToServer.writeBytes("GET " + urlString + " HTTP/1.1" + "\r\n" + "Host: " + host + ":" + port + "\r\n\r\n");
+//					if (file.createNewFile()) {
+//						System.out.println("File is created!");
+//					} else {
+//						System.out.println("File already existed!");
+//					}
+					get(url, host, port);
+//					outToServer.writeBytes("GET " + urlString + " HTTP/1.1" + "\r\n" + "Host: " + host + ":" + port + "\r\n\r\n");
 				}
 			}
 			bw.write(line+"\r\n");
 		}
 		bw.close();
-		br.close();
+//		br.close();
 		System.out.println("Written to file.");
 	}
 	
