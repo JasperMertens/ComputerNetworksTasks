@@ -1,8 +1,7 @@
+*.html
 webPage.txt
 *.class
 /bin/
-<<<<<<< HEAD
-=======
+.classpath
+.project
 
-ComputerNetworks/.classpath
->>>>>>> ParserBranch
