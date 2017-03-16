@@ -20,7 +20,7 @@ public class Client {
 	}
 	
 	public static void main(String[] args) {
-		String[] testArgs = {"GET", "http://www.tcpipguide.com/index.htm", "80"};
+		String[] testArgs = {"GET", "http://www.tldp.org/index.html", "80"};
 		try {
 			if (testArgs.length != 3)
 				throw new IllegalArgumentException("Wrong number of arguments!");
