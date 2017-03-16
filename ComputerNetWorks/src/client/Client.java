@@ -1,6 +1,8 @@
 package client;
 import java.io.*;
 import java.net.*;
+import java.util.ArrayList;
+
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -12,7 +14,6 @@ public class Client {
 	private Socket clientSocket;
 	private BufferedReader inFromServer;
 	private DataOutputStream outToServer;
-	private boolean bufferBusy;
 
 	public Client(String host, int port) throws UnknownHostException, IOException {
 		resetSocket(host, port);
@@ -73,9 +74,6 @@ public class Client {
 	private void get(URL uri, String host, int port) throws Exception {
 		System.out.println("get : "+ "GET " + uri.getFile() + " HTTP/1.1" + "\r\n" + "Host: " + host + ":" + port + "\r\n\r\n");
 		outToServer.writeBytes("GET " + uri.getFile() + " HTTP/1.1" + "\r\n" + "Host: " + host + ":" + port + "\r\n\r\n");
-		while (bufferBusy) {
-//			wait
-		}
 		int code = getCode(inFromServer);
 		handle("GET", uri, code, host, port, inFromServer);
 	}
@@ -195,19 +193,36 @@ public class Client {
 		}
 		BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file)));
 		int count = 0;
-		bufferBusy = true;
 		int Clength = 200;
-		String line;
-		while ((line = br.readLine()) != null) {
+		boolean body = false;
+		boolean documentFinished = false;
+		ArrayList<String> imgUrls = new ArrayList<>();
+//		String line;
+//		while ((line = br.readLine()) != null) {
+		while (!documentFinished) {
+			String line = br.readLine();
 			System.out.println("FROM SERVER: " + line);
 			if (line.contains("Content-Length:")) {
 				String[] ClengthAr = line.split("Content-Length: ");
 				Clength = Integer.parseInt(ClengthAr[1]);
 			}
-			count += line.getBytes().length;
-			if (count >= Clength) {
-				bufferBusy = false;
+			if (line.contains("</HTML>")) { // cheator compleator
+				System.out.println("Document finished");
+				documentFinished = true;
 			}
+			
+			count += line.getBytes("UTF-8").length + 2; // +2 voor \r\n
+			System.out.println("COUNT: "+ count);
+			System.out.println("Clength: "+ Clength);
+			if (line.contains("Content-Type")) {
+				System.out.println("body count reset");
+				count = 0;
+			}
+			if (count >= Clength) {
+				System.out.println("Document finished");
+				documentFinished = true;
+			}
+			
 			Document doc = Jsoup.parse(line, host);
 			Elements imgs = doc.select("img");
 			if (!imgs.isEmpty()) {
@@ -218,6 +233,7 @@ public class Client {
 						System.out.println("CONTINUE: "+img.attr("href"));
 						continue;
 					}
+					imgUrls.add(src);
 					String urlString = host + "/" + src;
 					System.out.println("urlString: "+urlString);
 					URL url = new URL("http://"+urlString);
@@ -226,7 +242,6 @@ public class Client {
 					File targetFile = new File(p);
 					File directory = new File(targetFile.getParentFile().getAbsolutePath());
 					directory.mkdirs();
-					new File(p);
 //					File parent = targetFile.getParentFile();
 //					if (!parent.exists() && !parent.mkdirs()) {
 //					    throw new IllegalStateException("Couldn't create dir: " + parent);
@@ -238,14 +253,21 @@ public class Client {
 //					} else {
 //						System.out.println("File already existed!");
 //					}
-					get(url, host, port);
-//					outToServer.writeBytes("GET " + urlString + " HTTP/1.1" + "\r\n" + "Host: " + host + ":" + port + "\r\n\r\n");
+//					get(url, host, port);
+					outToServer.writeBytes("GET " + url.getFile() + " HTTP/1.1" + "\r\n" + "Host: " + host + ":" + port + "\r\n\r\n");
 				}
 			}
 			bw.write(line+"\r\n");
-		}
+		} 
 		bw.close();
-//		br.close();
+		for (String imgUrl : imgUrls) {
+			System.out.println(imgUrl);
+			String urlString = host + "/" + imgUrl;
+			System.out.println("urlString: "+urlString);
+			URL url = new URL("http://"+urlString);
+			printAndWriteToFile(br, url, host, port);
+		}
+		br.close();
 		System.out.println("Written to file.");
 	}
 	
