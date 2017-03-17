@@ -10,6 +10,8 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import client.images.ImageFetcher;
+
 public class Client {
 	
 	public final static String FILE_SEP = System.getProperty("file.separator");
@@ -75,7 +77,8 @@ public class Client {
 
 	private void get(URL uri, String host, int port) throws Exception {
 		System.out.println("get : "+ "GET " + uri.getFile() + " HTTP/1.1" + "\r\n" + "Host: " + host + ":" + port + "\r\n\r\n");
-		outToServer.writeBytes("GET " + uri.getFile() + " HTTP/1.1" + "\r\n" + "Host: " + host + ":" + port + "\r\n\r\n");
+		outToServer.writeBytes("GET " + uri.getFile() + " HTTP/1.1" + "\r\n" + 
+				"Host: " + host + ":" + port + "\r\n\r\n");
 		int code = getCode(inFromServer);
 		handle("GET", uri, code, host, port, inFromServer);
 	}
@@ -119,6 +122,7 @@ public class Client {
 		if (code == 200) {
 			System.out.println("OK");
 			printAndWriteToFile(inFromServer, uri, host, port);
+			System.out.println("sluit zakske");	
 			clientSocket.close();
 		}
 		else if (code == 302) {
@@ -134,6 +138,9 @@ public class Client {
 		}
 		else {
 			System.out.println("Unknown code: "+ code);
+			printAndWriteToFile(inFromServer, uri, host, port);
+			System.out.println("sluit zakske");
+			clientSocket.close();
 			throw new IllegalArgumentException();
 		}
 	}
@@ -195,10 +202,11 @@ public class Client {
 		}
 		BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file)));
 		int count = 0;
-		int Clength = 200;
+		int Clength = 0;
 		boolean body = false;
 		boolean documentFinished = false;
 		ArrayList<String> imgUrls = new ArrayList<>();
+		boolean first = true;
 //		String line;
 //		while ((line = br.readLine()) != null) {
 		while (!documentFinished) {
@@ -206,24 +214,36 @@ public class Client {
 			System.out.println("FROM SERVER: " + line);
 			if (line.contains("Content-Length:")) {
 				String[] ClengthAr = line.split("Content-Length: ");
+				System.out.println("voor clength");
 				Clength = Integer.parseInt(ClengthAr[1]);
+				System.out.println("na clength");
 			}
-			if (line.contains("</HTML>")) { // cheator compleator
-				System.out.println("Document finished");
-				documentFinished = true;
-			}
+//			if (line.contains("</HTML>")) { // cheator compleator
+//				System.out.println("Document finished");
+//				documentFinished = true;
+//			}
 			
-			count += line.getBytes("UTF-8").length + 2; // +2 voor \r\n
+			count += line.getBytes("UTF-8").length +1; // +2 voor \r\n
 			System.out.println("COUNT: "+ count);
 			System.out.println("Clength: "+ Clength);
-			if (line.contains("Content-Type")) {
-				System.out.println("body count reset");
+			if ((first) &&  (line.length() == 0)) {
+				System.out.println("body start");
 				count = 0;
+				first = false;
+				body = true;
 			}
-			if (count >= Clength) {
+			if ((!first) && (count >= Clength)) {
 				System.out.println("Document finished");
 				documentFinished = true;
+				body = false;
+				System.out.println("body gedaan");
 			}
+			if (body){
+				bw.write(line+"\r\n");
+			}
+			
+//			ImageFetcher imageFetcher = new ImageFetcher(outToServer, port, host, line);
+//			imageFetcher.run();
 			
 			Document doc = Jsoup.parse(line, host);
 			Elements imgs = doc.select("img");
@@ -256,10 +276,11 @@ public class Client {
 //						System.out.println("File already existed!");
 //					}
 //					get(url, host, port);
+					Thread.sleep(1000);
 					outToServer.writeBytes("GET " + url.getFile() + " HTTP/1.1" + "\r\n" + "Host: " + host + ":" + port + "\r\n\r\n");
 				}
 			}
-			bw.write(line+"\r\n");
+			
 		} 
 		bw.close();
 		for (String imgUrl : imgUrls) {
