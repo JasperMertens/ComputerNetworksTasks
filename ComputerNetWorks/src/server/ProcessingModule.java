@@ -43,6 +43,7 @@ public class ProcessingModule implements Runnable {
 	private void checkTimer() throws IOException {
 		long elapsedTime = System.currentTimeMillis() - this.startTime;
 		if (elapsedTime >= MAX_TIME) {
+			System.out.println("socket timeout");
 			this.connectionSocket.close();
 		}
 	}
