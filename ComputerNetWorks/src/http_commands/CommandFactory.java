@@ -16,6 +16,7 @@ public class CommandFactory {
 	
 	public final static String FILE_SEP = System.getProperty("file.separator");
 	
+	// Om getHeaders te testen
 	public static void main(String[] args) throws IOException {
 		String path = System.getProperty("user.dir")+FILE_SEP+"src"+FILE_SEP+"client"+FILE_SEP+"webPage.txt";
 		File file = new File(path);
@@ -36,31 +37,17 @@ public class CommandFactory {
 
 	public static Command parseToCommand(BufferedReader br) throws IOException {
 		String firstLine = br.readLine();
-		
 		if (firstLine == null) {
-			return null;
+			throw new IllegalStateException("Buffer is empty!");
 		}
-//		Document doc = Jsoup.parse(input, "UTF-8", null);
-		
-		String commandStr = getCommand(firstLine);
-		String filePath = getFilePath(firstLine);
-		File file = new File(filePath);
-//		Elements headers = doc.select("head");
-//		for (Element header : headers) {
-//			System.out.println(header);
-//		}
-		Command result = null;
-		if (commandStr.equals("GET")) {
-			result = new Get(file);
-		} else if (commandStr.equals("HEAD")) {
-			result = new Head(file);
-		} else if (commandStr.equals("PUT")) {
-			result = new Put();
-		} else if (commandStr.equals("POST")) {
-			result = new Post();
-		} else 
-			System.out.println("Wrong command: "+commandStr);
-		return result;
+		Command cmd = parseFirstLine(firstLine);
+		while(!endOfHeaders(br)) {
+			cmd.addHeaders(br.readLine());
+		}
+		while(!endOfRequest(br)) {
+			cmd.addBody(br.readLine());
+		}
+		return cmd;
 	}
 	
 	private static Command parseFirstLine(String firstLine) {
@@ -79,6 +66,36 @@ public class CommandFactory {
 		} else 
 			System.out.println("Wrong command: "+commandStr);
 		return result;
+	}
+	
+	private static boolean endOfHeaders(BufferedReader br) throws IOException {
+		if (endOfRequest(br))
+			return true;
+		br.mark(100);
+		String nextLine = br.readLine();
+		if (nextLine.length() == 0)
+			return true;
+		return false;
+	}
+	
+	private static boolean endOfRequest(BufferedReader br) throws IOException {
+		br.mark(100);
+		String nextLine = br.readLine();
+		if ((nextLine == null) || isInitRequestLine(nextLine))
+			return true;
+		return false;
+	}
+	
+	private static boolean isInitRequestLine(String line) {
+		String[] splitted = line.split("\\s+");
+		if (splitted.length != 3)
+			return false;
+		if (!(splitted[0].equals("GET") || splitted[0].equals("HEAD") || 
+				splitted[0].equals("PUT") || splitted[0].equals("GET")))
+				return false;
+		if (!splitted[2].equals("HTTP\\.+"))
+			return false;
+		return true;
 	}
 	
 	private static String getFilePath(String firstLine) {

@@ -15,4 +15,16 @@ public class Put implements Command {
 		
 	}
 
+	@Override
+	public void addHeaders(String readLine) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void addBody(String readLine) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

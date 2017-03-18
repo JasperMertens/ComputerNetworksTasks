@@ -2,13 +2,20 @@ package server;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Server {
 	
 	private static int nbOfClients = 0;
 	public static final int MAX_NB_OF_CLIENTS = 5;
+	public static final String[] DATE_FORMAT_STRINGS = {"E, d M y H:m:s z",
+														"E, d-M-y H:m:s z",
+														"E, M d H:m:s y"};
 	static ServerSocket welcomeSocket;
 	static Socket connectionSocket;
+	private static Map<String, Date> modifiedDatesMap = new HashMap<>();
 
 	public static void main(String argv[]) {
 		try {
@@ -35,4 +42,9 @@ public class Server {
 			}
 		}
 	}
+	
+	public static Date getLastModified(String filePath) {
+		return modifiedDatesMap.get(filePath);
+	}
+	
 }

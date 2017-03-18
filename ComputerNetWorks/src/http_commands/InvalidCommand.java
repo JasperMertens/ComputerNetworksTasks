@@ -16,4 +16,16 @@ public class InvalidCommand implements Command {
 		outToClient.writeBytes("HTTP/1.1 500 Server Error \r\n There was a problem with " + this.problem);;
 	}
 
+	@Override
+	public void addHeaders(String readLine) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void addBody(String readLine) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }
