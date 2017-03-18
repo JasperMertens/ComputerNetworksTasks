@@ -82,17 +82,14 @@ public class CommandFactory {
 	}
 	
 	private static String getFilePath(String firstLine) throws MalformedURLException {
-		int indexFirstSpace = firstLine.indexOf(' ');
-		int indexSecondSpace = firstLine.lastIndexOf(' ');
-		String path = firstLine.substring(indexFirstSpace, indexSecondSpace);
-		System.out.println(path);
+		String[] splitted = firstLine.split("\\s+");
+		String path = splitted[1];
 		return path;
 	}
 
 
 	private static String getCommand(String firstLine) {
-		int indexFirstSpace = firstLine.indexOf(' ');
-		String command = firstLine.substring(0, indexFirstSpace);
-		return command;
+		String[] splitted = firstLine.split("\\s+");
+		return splitted[0];
 	}
 }
