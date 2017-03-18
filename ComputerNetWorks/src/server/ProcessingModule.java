@@ -28,18 +28,44 @@ public class ProcessingModule implements Runnable {
 	public void run() {
 		try {
 			while (true) {
-				Command c = CommandFactory.parseToCommand(connectionSocket.getInputStream());
-				if (c != null) {
-					c.getResponse(this.outToClient);
+				System.out.println("Waiting for input");
+				waitForInput();
+				System.out.println("Input received");
+				while (!inFromClientIsEmpty()) {
+					Command c = CommandFactory.parseToCommand(this.inFromClient);
+					if (c != null) {
+						c.getResponse(this.outToClient);
+					}
 				}
-				checkTimer();
 			}
-		} catch (IOException e) {
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 
+	private boolean inFromClientIsEmpty() {
+		try {
+			this.inFromClient.mark(100);
+			String line = this.inFromClient.readLine();
+			this.inFromClient.reset();
+			if (line == null) {
+				return true;
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return false;
+	}
+
+	private void waitForInput() throws InterruptedException, IOException {
+		while (inFromClientIsEmpty()) {
+			Thread.sleep(1000);
+//			checkTimer();
+		}
+	}
+	
 	private void checkTimer() throws IOException {
 		long elapsedTime = System.currentTimeMillis() - this.startTime;
 		if (elapsedTime >= MAX_TIME) {

@@ -16,6 +16,7 @@ public class Get implements Command {
 		BufferedReader br = new BufferedReader(new FileReader(file));
 		String line;
 		while ((line = br.readLine()) != null) {
+			System.out.println(line);
 			outToClient.writeBytes(line);
 		}
 	}

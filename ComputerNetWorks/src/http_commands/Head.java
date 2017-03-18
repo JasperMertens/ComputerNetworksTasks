@@ -14,9 +14,15 @@ public class Head implements Command {
 	public void getResponse(DataOutputStream outToClient) throws IOException {
 		outToClient.writeBytes("HTTP/1.1 200 OK");
 		BufferedReader br = new BufferedReader(new FileReader(file));
+		boolean head = true;
 		String line;
-		while ((line = br.readLine()) != null) {
-			outToClient.writeBytes(line);
+		while (((line = br.readLine()) != null) && head) {
+			if (line.length() == 0) {
+				head = false;
+			}
+			else {
+				outToClient.writeBytes(line);
+			}
 		}
 	}
 

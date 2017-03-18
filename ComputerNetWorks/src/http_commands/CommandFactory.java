@@ -34,14 +34,14 @@ public class CommandFactory {
 	}
 
 
-	public static Command parseToCommand(InputStream input) throws IOException {
-		BufferedReader br = new BufferedReader(new InputStreamReader(input));
+	public static Command parseToCommand(BufferedReader br) throws IOException {
 		String firstLine = br.readLine();
+		
 		if (firstLine == null) {
 			return null;
 		}
 //		Document doc = Jsoup.parse(input, "UTF-8", null);
-		br.close();
+		
 		String commandStr = getCommand(firstLine);
 		String filePath = getFilePath(firstLine);
 		File file = new File(filePath);
@@ -58,7 +58,26 @@ public class CommandFactory {
 			result = new Put();
 		} else if (commandStr.equals("POST")) {
 			result = new Post();
-		}
+		} else 
+			System.out.println("Wrong command: "+commandStr);
+		return result;
+	}
+	
+	private static Command parseFirstLine(String firstLine) throws MalformedURLException {
+		String commandStr = getCommand(firstLine);
+		String filePath = getFilePath(firstLine);
+		File file = new File(filePath);
+		Command result = null;
+		if (commandStr.equals("GET")) {
+			result = new Get(file);
+		} else if (commandStr.equals("HEAD")) {
+			result = new Head(file);
+		} else if (commandStr.equals("PUT")) {
+			result = new Put();
+		} else if (commandStr.equals("POST")) {
+			result = new Post();
+		} else 
+			System.out.println("Wrong command: "+commandStr);
 		return result;
 	}
 	
