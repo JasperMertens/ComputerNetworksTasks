@@ -12,10 +12,12 @@ public class Server {
 
 	public static void main(String argv[]) {
 		try {
-			welcomeSocket = new ServerSocket(6790);
+			welcomeSocket = new ServerSocket(6789);
+			welcomeSocket.setReuseAddress(true); //om sneller opnieuw te kunnen gebruiken om te testen
 			while (true) {
 				if (nbOfClients < MAX_NB_OF_CLIENTS) {
 					connectionSocket = welcomeSocket.accept();
+					System.out.println("Accepted");
 					nbOfClients += 1;
 					Thread t = new Thread(new ProcessingModule(connectionSocket));
 					t.start();

@@ -63,7 +63,7 @@ public class CommandFactory {
 		return result;
 	}
 	
-	private static Command parseFirstLine(String firstLine) throws MalformedURLException {
+	private static Command parseFirstLine(String firstLine) {
 		String commandStr = getCommand(firstLine);
 		String filePath = getFilePath(firstLine);
 		File file = new File(filePath);
@@ -81,7 +81,7 @@ public class CommandFactory {
 		return result;
 	}
 	
-	private static String getFilePath(String firstLine) throws MalformedURLException {
+	private static String getFilePath(String firstLine) {
 		String[] splitted = firstLine.split("\\s+");
 		String path = splitted[1];
 		return path;
