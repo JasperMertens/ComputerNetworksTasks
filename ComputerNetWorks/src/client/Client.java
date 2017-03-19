@@ -10,13 +10,13 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import client.images.ImageFetcher;
+//import client.images.ImageFetcher;
 
 public class Client {
 	
 	public final static String FILE_SEP = System.getProperty("file.separator");
 	private Socket clientSocket;
-	private BufferedReader inFromServer;
+	private ExtendedBufferedReader inFromServer;
 	private DataOutputStream outToServer;
 
 	public Client(String host, int port) throws UnknownHostException, IOException {
@@ -24,7 +24,7 @@ public class Client {
 	}
 	
 	public static void main(String[] args) {
-		String[] testArgs = {"GET", "http://www.tldp.org/index.html", "80"};
+		String[] testArgs = {"GET", "http://www.tcpipguide.com/index.htm", "80"};
 		try {
 			if (testArgs.length != 3)
 				throw new IllegalArgumentException("Wrong number of arguments!");
@@ -61,7 +61,7 @@ public class Client {
 		if (this.clientSocket != null)
 			this.clientSocket.close();
 		this.clientSocket = new Socket(host, port);
-		this.inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+		this.inFromServer = new ExtendedBufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 		this.outToServer = new DataOutputStream(clientSocket.getOutputStream());
 	}
 
@@ -77,8 +77,7 @@ public class Client {
 
 	private void get(URL uri, String host, int port) throws Exception {
 		System.out.println("get : "+ "GET " + uri.getFile() + " HTTP/1.1" + "\r\n" + "Host: " + host + ":" + port + "\r\n\r\n");
-		outToServer.writeBytes("GET " + uri.getFile() + " HTTP/1.1" + "\r\n" + 
-				"Host: " + host + ":" + port + "\r\n\r\n");
+		outToServer.writeBytes("GET " + uri.getFile() + " HTTP/1.1" + "\r\n" + "Host: " + host + ":" + port + "\r\n\r\n");
 		int code = getCode(inFromServer);
 		handle("GET", uri, code, host, port, inFromServer);
 	}
@@ -118,7 +117,7 @@ public class Client {
 //		// clientSocket.close();
 //	}
 	
-	private void handle(String command, URL uri, int code, String host, int port, BufferedReader inFromServer) throws Exception {
+	private void handle(String command, URL uri, int code, String host, int port, ExtendedBufferedReader inFromServer) throws Exception {
 		if (code == 200) {
 			System.out.println("OK");
 			printAndWriteToFile(inFromServer, uri, host, port);
@@ -138,7 +137,7 @@ public class Client {
 		}
 		else {
 			System.out.println("Unknown code: "+ code);
-			printAndWriteToFile(inFromServer, uri, host, port);
+//			writeToFile(inFromServer);
 			System.out.println("sluit zakske");
 			clientSocket.close();
 			throw new IllegalArgumentException();
@@ -180,7 +179,8 @@ public class Client {
 //	}
 //	
 //	private void writeToFile(BufferedReader input) throws IOException {
-//		File file = new File("webPage.txt");
+//		String path = System.getProperty("user.dir")+FILE_SEP+"src"+FILE_SEP+"client"+FILE_SEP+"webPage.html";
+//		File file = new File(path);
 //		System.out.println("path: "+file.getPath());
 //		BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file)));
 //		String line;
@@ -191,7 +191,7 @@ public class Client {
 //		System.out.println("Written to file.");
 //	}
 	
-	private void printAndWriteToFile(BufferedReader br, URL uri, String host, int port) throws Exception {
+	private void printAndWriteToFile(ExtendedBufferedReader ebr, URL uri, String host, int port) throws Exception {
 		String path = System.getProperty("user.dir")+FILE_SEP+"src"+FILE_SEP+"client"+uri.getPath();
 		File file = new File(path);
 		System.out.println("path: "+file.getPath());
@@ -201,7 +201,7 @@ public class Client {
 			System.out.println("File already existed!");
 		}
 		BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file)));
-		int count = 0;
+		long count = 0;
 		int Clength = 0;
 		boolean body = false;
 		boolean documentFinished = false;
@@ -210,40 +210,33 @@ public class Client {
 //		String line;
 //		while ((line = br.readLine()) != null) {
 		while (!documentFinished) {
-			String line = br.readLine();
+			String line = ebr.readLine();
 			System.out.println("FROM SERVER: " + line);
 			if (line.contains("Content-Length:")) {
 				String[] ClengthAr = line.split("Content-Length: ");
-				System.out.println("voor clength");
-				Clength = Integer.parseInt(ClengthAr[1]);
-				System.out.println("na clength");
+				Clength = Integer.parseInt(ClengthAr[1]); //geen klein cheatorke? (+2)
 			}
-//			if (line.contains("</HTML>")) { // cheator compleator
-//				System.out.println("Document finished");
-//				documentFinished = true;
-//			}
-			
-			count += line.getBytes("UTF-8").length +1; // +2 voor \r\n
-			System.out.println("COUNT: "+ count);
-			System.out.println("Clength: "+ Clength);
 			if ((first) &&  (line.length() == 0)) {
 				System.out.println("body start");
-				count = 0;
+				ebr.resetTotalBytes();
 				first = false;
 				body = true;
 			}
+			count = ebr.getTotalBytes();
+			System.out.println("COUNT: "+ count);
+			System.out.println("Clength: "+ Clength);
 			if ((!first) && (count >= Clength)) {
 				System.out.println("Document finished");
+				first = true;
 				documentFinished = true;
 				body = false;
 				System.out.println("body gedaan");
 			}
+//		System.out.println("bytes counted: "+ebr.getTotalBytes()+ ", "+ebr.getBytesRead()+", "+ebr.getCRLFCounter());
+		
 			if (body){
 				bw.write(line+"\r\n");
 			}
-			
-//			ImageFetcher imageFetcher = new ImageFetcher(outToServer, port, host, line);
-//			imageFetcher.run();
 			
 			Document doc = Jsoup.parse(line, host);
 			Elements imgs = doc.select("img");
@@ -288,9 +281,9 @@ public class Client {
 			String urlString = host + "/" + imgUrl;
 			System.out.println("urlString: "+urlString);
 			URL url = new URL("http://"+urlString);
-			printAndWriteToFile(br, url, host, port);
+			printAndWriteToFile(ebr, url, host, port);
 		}
-		br.close();
+		ebr.close();
 		System.out.println("Written to file.");
 	}
 	
