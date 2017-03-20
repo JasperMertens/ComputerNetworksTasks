@@ -330,7 +330,7 @@ public class Client {
 			}
 			if ((line.length() == 0)) {
 				System.out.println("body start");
-				inFromServer.resetTotalBytes();
+				inFromServer.resetBytesRead();
 				body = true;
 			}
 		}
@@ -350,7 +350,7 @@ public class Client {
 		while (!documentFinished) {
 //			String line = inFromServer.readLine(cLength);
 			String line = inFromServer.readLine();
-			System.out.println("FROM SERVER: "+line+"\r\n");
+			System.out.println("FROM SERVER: "+line);
 			bw.write(line+"\r\n");
 //			Document doc = Jsoup.parse(line, host);
 //			Elements imgs = doc.select("img");
@@ -371,27 +371,27 @@ public class Client {
 //					outToServer.writeBytes("GET " + url.getFile() + " HTTP/1.1" + "\r\n" + "Host: " + host + ":" + port + "\r\n\r\n");
 //				}
 //			}
-			System.out.println("buffercount: "+inFromServer.getBytesRead());
-			System.out.println("Clength:"+cLength);
-			if ((inFromServer.getTotalBytes() >= cLength)) {
+//			System.out.println("buffercount: "+inFromServer.getBytesRead());
+//			System.out.println("Clength:"+cLength);
+			if ((inFromServer.getBytesRead() >= cLength)) {
 				System.out.println("Document finished");
 				documentFinished = true;
 			}
-			bw.close();
-			for (String imgUrl : imgUrls) {
-				URL url = new URL("http://"+host + "/" + imgUrl);
-				handleInput(url, host, port);
-			}
-			inFromServer.close();
-			System.out.println("Written to file.");
 		}
+		bw.close();
+		for (String imgUrl : imgUrls) {
+			URL url = new URL("http://"+host + "/" + imgUrl);
+			handleInput(url, host, port);
+		}
+		inFromServer.close();
+		System.out.println("Written to file.");
 	}
 
 	private void writeImage(File file, int clength) throws IOException {
 		OutputStream os = new BufferedOutputStream(new FileOutputStream(file));
 		boolean documentFinished = false;
 		while (!documentFinished ) {
-			int ch = inFromServer.readSuper();
+			int ch = inFromServer.read();
 			//			System.out.println("buffercount: "+inFromServer.getBytesRead());
 			//			System.out.println("Clength:"+cLength);
 			if ((inFromServer.getBytesRead() >= clength)) {

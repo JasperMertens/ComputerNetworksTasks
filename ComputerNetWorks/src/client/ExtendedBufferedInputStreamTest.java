@@ -75,12 +75,12 @@ public class ExtendedBufferedInputStreamTest {
 				String[] ClengthAr = line.split("Content-Length: ");
 				Clength = Integer.parseInt(ClengthAr[1])+ 2; //klein cheatorke
 			}
-			count = ebr.getTotalBytes();
+			count = ebr.getBytesRead();
 			System.out.println("COUNT: "+ count);
 			System.out.println("Clength: "+ Clength);
 			if ((first) &&  (line.length() == 0)) {
 				System.out.println("body start");
-				ebr.resetTotalBytes();
+				ebr.getBytesRead();
 				first = false;
 				body = true;
 			}
@@ -91,7 +91,7 @@ public class ExtendedBufferedInputStreamTest {
 				System.out.println("body gedaan");
 			}
 		}
-		System.out.println("bytes counted: "+ebr.getTotalBytes()+ ", "+ebr.getBytesRead()+", "+ebr.getCRLFCounter());
+		System.out.println("bytes counted: "+ebr.getBytesRead());
 		ebr.close();
 	}
 	
