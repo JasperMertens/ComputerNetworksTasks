@@ -24,7 +24,7 @@ public class Client {
 	}
 	
 	public static void main(String[] args) {
-		String[] testArgs = {"GET", "http://www.tcpipguide.com/index.htm", "80"};
+		String[] testArgs = {"GET", "http://www.tldp.org/index.html", "80"};
 		try {
 			if (testArgs.length != 3)
 				throw new IllegalArgumentException("Wrong number of arguments!");
@@ -93,7 +93,7 @@ public class Client {
 	private void handle(String command, URL uri, int code, String host, int port) throws Exception {
 		if (code == 200) {
 			System.out.println("OK");
-			printAndWriteToFile(uri, host, port);
+			handleInput(uri, host, port);
 //			printAndWriteImg(uri, host, port);
 			System.out.println("sluit zakske");	
 			clientSocket.close();
@@ -165,133 +165,240 @@ public class Client {
 //		System.out.println("Written to file.");
 //	}
 	
-	private void printAndWriteToFile(URL uri, String host, int port) throws Exception {
+//	private void printAndWriteToFile(URL uri, String host, int port) throws Exception {
+//		String path = System.getProperty("user.dir")+FILE_SEP+"src"+FILE_SEP+"client"+uri.getPath();
+//		File file = new File(path);
+//		System.out.println("path: "+file.getPath());
+//		if (file.createNewFile()) {
+//			System.out.println("File is created!");
+//		} else {
+//			System.out.println("File already existed!");
+//		}
+//		BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file)));
+//		long count = 0;
+//		int Clength = 0;
+//		String Ctype = null;
+//		boolean body = false;
+//		boolean documentFinished = false;
+//		ArrayList<String> imgUrls = new ArrayList<>();
+//		boolean first = true;
+//		while (!documentFinished) {
+//			String line;
+//			if (body) {
+//				line = inFromServer.readLine(Clength);
+//			} else {
+//				line = inFromServer.readLine();
+//			}
+//			System.out.println("FROM SERVER: " + line);
+//			if (line.contains("Content-Length")) {
+//				String[] ClengthAr = line.split("Content-Length *: *"); // * for zero or more spaces
+//				Clength = Integer.parseInt(ClengthAr[1]) + 2; //geen klein cheatorke? (+2)
+//			}
+//			if (line.contains("Content-Type")) {
+//				String[] CtypeAr = line.split("Content-Type *: *");
+//				Ctype = CtypeAr[1];
+//				System.out.println("Found content type: "+Ctype);
+//			}
+//			if ((first) &&  (line.length() == 0)) {
+//				System.out.println("body start");
+//				inFromServer.resetTotalBytes();
+//				first = false;
+//				body = true;
+//				if (Ctype.contains("text")) {
+//					printAndWriteText(file, host, port, Clength);
+//				} else {
+//					writeImage(file, Clength);
+//				}
+//				
+//			}
+//			count = inFromServer.getTotalBytes();
+//			System.out.println("COUNT: "+ count);
+//			System.out.println("Clength: "+ Clength);
+//			if ((!first) && (count >= Clength)) {
+//				System.out.println("Document finished");
+//				first = true;
+//				documentFinished = true;
+//				body = false;
+//			}
+//			if (body){
+//				bw.write(line+"\r\n");
+//			}
+//			
+//			Document doc = Jsoup.parse(line, host);
+//			Elements imgs = doc.select("img");
+//			if (!imgs.isEmpty()) {
+//				for (Element img: imgs) {
+//					String src = img.attr("src");
+//					System.out.println(src);
+//					if (src.substring(0, 4).equals("http")) {
+//						System.out.println("CONTINUE: "+img.attr("href"));
+//						continue;
+//					}
+//					imgUrls.add(src);
+//					String urlString = host + "/" + src;
+//					System.out.println("urlString: "+urlString);
+//					URL url = new URL("http://"+urlString);
+//					String p = System.getProperty("user.dir")+FILE_SEP+"src"+FILE_SEP+"client"+FILE_SEP+src;
+//					File targetFile = new File(p);
+//					File directory = new File(targetFile.getParentFile().getAbsolutePath());
+//					directory.mkdirs();
+//					System.out.println("path: "+p);
+//					outToServer.writeBytes("GET " + url.getFile() + " HTTP/1.1" + "\r\n" + "Host: " + host + ":" + port + "\r\n\r\n");
+//				}
+//			}
+//			
+//		}
+//		bw.close();
+//		for (String imgUrl : imgUrls) {
+//			System.out.println(imgUrl);
+//			String urlString = host + "/" + imgUrl;
+//			System.out.println("urlString: "+urlString);
+//			URL url = new URL("http://"+urlString);
+//			printAndWriteImg(url, host, port);
+//		}
+//		inFromServer.close();
+//		System.out.println("Written to file.");
+//	}
+	
+//	private void printAndWriteImg(URL url, String host, int port) throws IOException {
+//		String path = System.getProperty("user.dir")+FILE_SEP+"src"+FILE_SEP+"client"+url.getPath();
+//		File file = new File(path);
+//		System.out.println("path: "+file.getPath());
+//		if (file.createNewFile()) {
+//			System.out.println("File is created!");
+//		} else {
+//			System.out.println("File already existed!");
+//		}
+//		OutputStream os = new BufferedOutputStream(new FileOutputStream(file));
+//		long count = 0;
+//		int Clength = 0;
+//		boolean body = false;
+//		boolean documentFinished = false;
+//		boolean first = true;
+//		while (!body) {
+//			String line;
+//			line = inFromServer.readLine();
+//			System.out.println("FROM SERVER: " + line);
+//			if (line.contains("Content-Length")) {
+//				String[] ClengthAr = line.split("Content-Length *: *"); // * for zero or more spaces
+//				Clength = Integer.parseInt(ClengthAr[1]); //geen klein cheatorke? (+2)
+//			}
+//			if ((first) &&  (line.length() == 0)) {
+//				System.out.println("img body start");
+//				inFromServer.resetTotalBytes();
+//				first = false;
+//				body = true;
+//			}
+//		} 
+//		boolean skipFirst = true;
+//		while (!documentFinished) {
+//			count ++;
+//			int ch = inFromServer.readSuper();
+////			System.out.println("COUNT:" + count);
+////			System.out.println("buffercount: "+inFromServer.getBytesRead());
+////			System.out.println("Clength:"+Clength);
+//			if ((count >= Clength)) {
+//				System.out.println("Document finished");
+//				documentFinished = true;
+//			} else if (skipFirst) {
+//				skipFirst = false;
+//			} else {
+//				os.write(ch);
+//			}
+//		}
+//		os.close();
+//	}
+	
+	private void handleInput(URL uri, String host, int port) throws Exception {
 		String path = System.getProperty("user.dir")+FILE_SEP+"src"+FILE_SEP+"client"+uri.getPath();
 		File file = new File(path);
 		System.out.println("path: "+file.getPath());
-		if (file.createNewFile()) {
-			System.out.println("File is created!");
-		} else {
-			System.out.println("File already existed!");
-		}
-		BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file)));
-		long count = 0;
-		int Clength = 0;
+		int cLength = 0;
+		String cType = null;
 		boolean body = false;
-		boolean documentFinished = false;
-		ArrayList<String> imgUrls = new ArrayList<>();
-		boolean first = true;
-		while (!documentFinished) {
-			String line;
-			if (body) {
-				line = inFromServer.readLine(Clength);
-			} else {
-				line = inFromServer.readLine();
-			}
+		while (!body) {
+			String line = inFromServer.readLine();
 			System.out.println("FROM SERVER: " + line);
-			if (line.contains("Content-Length:")) {
-				String[] ClengthAr = line.split("Content-Length: ");
-				Clength = Integer.parseInt(ClengthAr[1]) + 2; //geen klein cheatorke? (+2)
+			if (line.contains("Content-Length")) {
+				String[] ClengthAr = line.split("Content-Length *: *"); // * for zero or more spaces
+				cLength = Integer.parseInt(ClengthAr[1]); //geen klein cheatorke? (+2)
 			}
-			if ((first) &&  (line.length() == 0)) {
+			if (line.contains("Content-Type")) {
+				String[] CtypeAr = line.split("Content-Type *: *");
+				cType = CtypeAr[1];
+				System.out.println("Found content type: "+cType);
+			}
+			if ((line.length() == 0)) {
 				System.out.println("body start");
 				inFromServer.resetTotalBytes();
-				first = false;
 				body = true;
 			}
-			count = inFromServer.getTotalBytes();
-			System.out.println("COUNT: "+ count);
-			System.out.println("Clength: "+ Clength);
-			if ((!first) && (count >= Clength)) {
-				System.out.println("Document finished");
-				first = true;
-				documentFinished = true;
-				body = false;
-			}
-			if (body){
-				bw.write(line+"\r\n");
-			}
-			
-			Document doc = Jsoup.parse(line, host);
-			Elements imgs = doc.select("img");
-			if (!imgs.isEmpty()) {
-				for (Element img: imgs) {
-					String src = img.attr("src");
-					System.out.println(src);
-					if (src.substring(0, 4).equals("http")) {
-						System.out.println("CONTINUE: "+img.attr("href"));
-						continue;
-					}
-					imgUrls.add(src);
-					String urlString = host + "/" + src;
-					System.out.println("urlString: "+urlString);
-					URL url = new URL("http://"+urlString);
-					String p = System.getProperty("user.dir")+FILE_SEP+"src"+FILE_SEP+"client"+FILE_SEP+src;
-					File targetFile = new File(p);
-					File directory = new File(targetFile.getParentFile().getAbsolutePath());
-					directory.mkdirs();
-					System.out.println("path: "+p);
-					outToServer.writeBytes("GET " + url.getFile() + " HTTP/1.1" + "\r\n" + "Host: " + host + ":" + port + "\r\n\r\n");
-				}
-			}
-			
 		}
-		bw.close();
-		for (String imgUrl : imgUrls) {
-			System.out.println(imgUrl);
-			String urlString = host + "/" + imgUrl;
-			System.out.println("urlString: "+urlString);
-			URL url = new URL("http://"+urlString);
-			printAndWriteImg(url, host, port);
+		if (cType.contains("text")) {
+			System.out.println("Printing and writing text!");
+			printAndWriteText(file, host, port, cLength);
+		} else {
+			System.out.println("Writing Image!");
+			writeImage(file, cLength);
 		}
-		inFromServer.close();
-		System.out.println("Written to file.");
 	}
 	
-	private void printAndWriteImg(URL url, String host, int port) throws IOException {
-		String path = System.getProperty("user.dir")+FILE_SEP+"src"+FILE_SEP+"client"+url.getPath();
-		File file = new File(path);
-		System.out.println("path: "+file.getPath());
-		if (file.createNewFile()) {
-			System.out.println("File is created!");
-		} else {
-			System.out.println("File already existed!");
-		}
-		OutputStream os = new BufferedOutputStream(new FileOutputStream(file));
-		long count = 0;
-		int Clength = 0;
-		boolean body = false;
+	private void printAndWriteText(File file, String host, int port, long cLength) throws Exception {
 		boolean documentFinished = false;
-		boolean first = true;
-		while (!body) {
-			String line;
-			line = inFromServer.readLine();
-			System.out.println("FROM SERVER: " + line);
-			if (line.contains("Content-Length:")) {
-				String[] ClengthAr = line.split("Content-Length: ");
-				Clength = Integer.parseInt(ClengthAr[1]); //geen klein cheatorke? (+2)
-			}
-			if ((first) &&  (line.length() == 0)) {
-				System.out.println("img body start");
-				inFromServer.resetTotalBytes();
-				first = false;
-				body = true;
-			}
-		} 
-		boolean skipFirst = true;
+		ArrayList<String> imgUrls = new ArrayList<>();
+		BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file)));
 		while (!documentFinished) {
-			count ++;
-			int ch = inFromServer.readSuper();
-//			System.out.println("COUNT:" + count);
-//			System.out.println("Clength:"+Clength);
-			if ((count >= Clength)) {
+//			String line = inFromServer.readLine(cLength);
+			String line = inFromServer.readLine();
+			System.out.println("FROM SERVER: "+line+"\r\n");
+			bw.write(line+"\r\n");
+//			Document doc = Jsoup.parse(line, host);
+//			Elements imgs = doc.select("img");
+//			if (!imgs.isEmpty()) {
+//				for (Element img: imgs) {
+//					String src = img.attr("src");
+//					System.out.println(src);
+//					if (src.substring(0, 4).equals("http")) {
+//						System.out.println("CONTINUE: "+img.attr("href"));
+//						continue;
+//					}
+//					imgUrls.add(src);
+//					URL url = new URL("http://"+host + "/" + src);
+//					String p = System.getProperty("user.dir")+FILE_SEP+"src"+FILE_SEP+"client"+FILE_SEP+src;
+//					File targetFile = new File(p);
+//					File directory = new File(targetFile.getParentFile().getAbsolutePath());
+//					directory.mkdirs();
+//					outToServer.writeBytes("GET " + url.getFile() + " HTTP/1.1" + "\r\n" + "Host: " + host + ":" + port + "\r\n\r\n");
+//				}
+//			}
+			System.out.println("buffercount: "+inFromServer.getBytesRead());
+			System.out.println("Clength:"+cLength);
+			if ((inFromServer.getTotalBytes() >= cLength)) {
 				System.out.println("Document finished");
 				documentFinished = true;
-			} else if (skipFirst) {
-				skipFirst = false;
-			} else {
-				os.write(ch);
 			}
+			bw.close();
+			for (String imgUrl : imgUrls) {
+				URL url = new URL("http://"+host + "/" + imgUrl);
+				handleInput(url, host, port);
+			}
+			inFromServer.close();
+			System.out.println("Written to file.");
+		}
+	}
+
+	private void writeImage(File file, int clength) throws IOException {
+		OutputStream os = new BufferedOutputStream(new FileOutputStream(file));
+		boolean documentFinished = false;
+		while (!documentFinished ) {
+			int ch = inFromServer.readSuper();
+			//			System.out.println("buffercount: "+inFromServer.getBytesRead());
+			//			System.out.println("Clength:"+cLength);
+			if ((inFromServer.getBytesRead() >= clength)) {
+				System.out.println("Document finished");
+				documentFinished = true;
+			}
+			os.write(ch);
 		}
 		os.close();
 	}
