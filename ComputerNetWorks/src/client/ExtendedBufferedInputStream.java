@@ -1,10 +1,11 @@
 package client;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.Reader;
+import java.io.InputStream;
 
-final class ExtendedBufferedReader extends BufferedReader {
+final class ExtendedBufferedInputStream extends BufferedInputStream {
 
     /** The count of EOLs (CR/LF/CRLF) seen so far */
     private long eolCounter = 0;
@@ -18,8 +19,8 @@ final class ExtendedBufferedReader extends BufferedReader {
     /**
      * Created extended buffered reader using default buffer-size
      */
-    ExtendedBufferedReader(final Reader reader) {
-        super(reader);
+    ExtendedBufferedInputStream(final InputStream inputStream) {
+        super(inputStream);
     }
 
     @Override
@@ -29,10 +30,10 @@ final class ExtendedBufferedReader extends BufferedReader {
 //			System.out.println("CRLF detected at: " + lineCount);
 			CRLFCounter++;
 		} else if (current == LF && lastChar != CR) {
-			System.out.println("LF detected at: " + lineCount);
+//			System.out.println("LF detected at: " + lineCount);
 			eolCounter++;
 		} else if (current == CR && lookAhead() != LF) {
-			System.out.println("CR detected at: " + lineCount);
+//			System.out.println("CR detected at: " + lineCount);
 			eolCounter++;
 		} else if (current != -1 && current !=  CR && current != LF) {
 			this.bytesRead++;
@@ -40,6 +41,11 @@ final class ExtendedBufferedReader extends BufferedReader {
         lastChar = current;
         return lastChar;
     }
+    
+    public int readSuper() throws IOException {
+    	return super.read();
+    }
+    
 
     /**
      * Returns the last character that was read as an integer (0 to 65535). This will be the last character returned by
@@ -64,7 +70,6 @@ final class ExtendedBufferedReader extends BufferedReader {
      *
      * @return the line that was read, or null if reached EOF.
      */
-    @Override
     public String readLine() throws IOException {
     	this.lineCount  ++;
     	int current;
@@ -82,9 +87,37 @@ final class ExtendedBufferedReader extends BufferedReader {
         return line;
     }
     
+    public String readLine(long limit) throws IOException {
+    	this.lineCount  ++;
+    	int current;
+    	String line = "";
+    	while (!isEndOfLine(current = this.read(), limit)) {
+    		if (!(current == CR || current == LF)) {
+    			line += Character.toString((char) current);
+    		}
+    	}
+    	if (this.end_of_stream)	
+    		return null;
+    	if (current == -1) {
+    		this.end_of_stream = true;
+    	}
+        return line;
+    }
+    
     // for CRLF
     private boolean isEndOfLine(int ch) throws IOException {
 		if (ch == CR || ch == -1){
+			return true;
+		}
+		return false;
+	}
+    
+    // for CRLF
+    private boolean isEndOfLine(int ch, long limit) throws IOException {
+    	if (getTotalBytes() > limit) {
+    		return true;
+    	}
+    	else if (ch == CR || ch == -1){
 			return true;
 		}
 		return false;

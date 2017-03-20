@@ -1,11 +1,7 @@
 package client;
 
-import static org.junit.Assert.*;
-
-import java.io.FileNotFoundException;
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -13,7 +9,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class ExtendedBufferedReaderTest {
+public class ExtendedBufferedInputStreamTest {
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -61,15 +57,20 @@ public class ExtendedBufferedReaderTest {
 	@Test
 	public void test3() throws IOException {
 		System.out.println("test3: ");
-		ExtendedBufferedReader ebr = new ExtendedBufferedReader(new FileReader("src/client/webPage.html"));
+		ExtendedBufferedInputStream ebr = new ExtendedBufferedInputStream(new FileInputStream("src/client/webPage.html"));
 		long count = 0;
 		int Clength = 0;
 		boolean body = false;
 		boolean documentFinished = false;
 		boolean first = true;
 		while (!documentFinished) {
-			String line = ebr.readLine();
-//			System.out.println("FROM SERVER: " + line);
+			String line;
+			if (body) {
+				line = ebr.readLine(Clength);
+			} else {
+				line = ebr.readLine();
+			}
+			System.out.println("FROM SERVER: " + line);
 			if (line.contains("Content-Length:")) {
 				String[] ClengthAr = line.split("Content-Length: ");
 				Clength = Integer.parseInt(ClengthAr[1])+ 2; //klein cheatorke
@@ -91,6 +92,7 @@ public class ExtendedBufferedReaderTest {
 			}
 		}
 		System.out.println("bytes counted: "+ebr.getTotalBytes()+ ", "+ebr.getBytesRead()+", "+ebr.getCRLFCounter());
+		ebr.close();
 	}
 	
 //	@Test

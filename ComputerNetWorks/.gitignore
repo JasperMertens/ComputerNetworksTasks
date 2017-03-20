@@ -4,4 +4,6 @@ webPage.txt
 /bin/
 .classpath
 .project
+*.gif
+*.png
 
