@@ -22,7 +22,7 @@ public class Client {
 	}
 	
 	public static void main(String[] args) {
-		String[] testArgs = {"GET", "http://www.tldp.org/index.html", "80"};
+		String[] testArgs = {"HEAD", "http://www.google.com/index.html", "80"};
 		try {
 			if (testArgs.length != 3)
 				throw new IllegalArgumentException("Wrong number of arguments!");
@@ -91,7 +91,7 @@ public class Client {
 	private void handle(String command, URL uri, int code, String host, int port) throws Exception {
 		if (code == 200) {
 			System.out.println("OK");
-			handleInput(uri, host, port);
+			handleInput(uri, host, port, command);
 			System.out.println("sluit zakske");	
 			clientSocket.close();
 		}
@@ -118,10 +118,10 @@ public class Client {
 		inFromServer.mark(100);
 		String firstLine = inFromServer.readLine();
 		inFromServer.reset();
-		System.out.println("first line: "+ firstLine);
+		System.out.println("FROM SERVER: "+ firstLine);
 		String result = firstLine.substring(9, 12);
 		System.out.println("Received code: "+ result);
-		System.out.println("Server: "+inFromServer.readLine());
+//		System.out.println("Server: "+inFromServer.readLine());
 		return Integer.parseInt(result);
 	}
 	
@@ -141,7 +141,7 @@ public class Client {
 		throw new Exception("No location found");
 	}
 	
-	private void handleInput(URL uri, String host, int port) throws Exception {
+	private void handleInput(URL uri, String host, int port, String command) throws Exception {
 		int code = 0;
 		String path = System.getProperty("user.dir")+FILE_SEP+"src"+FILE_SEP+"client"+uri.getPath();
 		File file = new File(path);
@@ -167,7 +167,7 @@ public class Client {
 			if ((line.length() == 0)) {
 				System.out.println("body start");
 				inFromServer.resetBytesRead();
-				if (code >= 300) {
+				if ((code >= 300) || (command == "HEAD")) {
 					inFromServer.skip(cLength);
 					cLength = 0;
 				}
@@ -219,7 +219,7 @@ public class Client {
 		bw.close();
 		for (String imgUrl : imgUrls) {
 			URL url = new URL("http://"+host + "/" + imgUrl);
-			handleInput(url, host, port);
+			handleInput(url, host, port, "GET");
 		}
 		inFromServer.close();
 		System.out.println("Written to file.");
