@@ -1,5 +1,6 @@
 package http_commands;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -35,18 +36,23 @@ public class CommandFactory {
 	}
 
 
-	public static Command parseToCommand(BufferedReader br) throws IOException {
-		String firstLine = br.readLine();
+	public static Command parseToCommand(BufferedReader inFromClient) throws IOException {
+		String firstLine = inFromClient.readLine();
 		if (firstLine == null) {
 			throw new IllegalStateException("Buffer is empty!");
 		}
+		System.out.println("Parsing firstLine: "+firstLine);
 		Command cmd = parseFirstLine(firstLine);
-		while(!endOfHeaders(br)) {
-			cmd.addHeaders(br.readLine());
+		while(!endOfHeaders(inFromClient)) {
+			String nextLine = inFromClient.readLine();
+			System.out.println("Parsing: "+ nextLine);
+			cmd.addHeaders(nextLine);
 		}
-		while(!endOfRequest(br)) {
-			cmd.addBody(br.readLine());
-		}
+		System.out.println("letste reigel lejug? "+(inFromClient.readLine().length() == 0));
+//		while(!endOfRequest(inFromClient)) {
+//			cmd.addBody(inFromClient.readLine());
+//		}
+		System.out.println("Command created!");
 		return cmd;
 	}
 	
@@ -69,20 +75,28 @@ public class CommandFactory {
 	}
 	
 	private static boolean endOfHeaders(BufferedReader br) throws IOException {
-		if (endOfRequest(br))
+		if (endOfRequest(br)) {
+			System.out.println("is end of request");
 			return true;
+		}
 		br.mark(100);
 		String nextLine = br.readLine();
-		if (nextLine.length() == 0)
+		br.reset();
+		if (nextLine.length() == 0) {
+			System.out.println("endOfHeaders");
 			return true;
+		}
+		System.out.println("not end of headers");
 		return false;
 	}
 	
 	private static boolean endOfRequest(BufferedReader br) throws IOException {
 		br.mark(100);
 		String nextLine = br.readLine();
-		if ((nextLine == null) || isInitRequestLine(nextLine))
+		if ((nextLine == null) || isInitRequestLine(nextLine)) { // checken of er hierna een volgende request komt
 			return true;
+		}
+		br.reset();
 		return false;
 	}
 	

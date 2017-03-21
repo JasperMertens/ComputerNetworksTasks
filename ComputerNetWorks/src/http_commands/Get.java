@@ -7,6 +7,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 
 import server.Server;
@@ -14,7 +15,7 @@ import server.Server;
 public class Get implements Command {
 
 	private File file;
-	private String headers = "";
+	private ArrayList<String> headers = new ArrayList<>();
 
 	public Get(File file) {
 		this.file = file;
@@ -25,9 +26,11 @@ public class Get implements Command {
 		if (!hasLegalHostHeader()) {
 			outToClient.writeBytes("HTTP/1.1 400 Bad Request\r\n");
 		} else if (!isModifiedSince()) {
-			outToClient.writeBytes("HTTP/1.1 304 Not Modified\r\n");
+			outToClient.writeBytes(	"HTTP/1.1 304 Not Modified\r\n"+
+									"Date: "+Server.DATE_FORMAT.format(new Date()));
 		} else {
-			outToClient.writeBytes("HTTP/1.1 200 OK\r\n");
+			outToClient.writeBytes(	"HTTP/1.1 200 OK\r\n"+
+									"Date: "+Server.DATE_FORMAT.format(new Date())+ "\r\n\r\n");
 			String path = file.getPath();
 			System.out.println("Loser: "+System.getProperty("user.dir")+path);
 			BufferedReader br = new BufferedReader(new FileReader(System.getProperty("user.dir")+path));
@@ -40,16 +43,16 @@ public class Get implements Command {
 	}
 	
 	private boolean hasLegalHostHeader() {
-		return (this.headers.toLowerCase().contains("host"));
+		return true;
+//		return (this.headers.toLowerCase().contains("host"));
 	}
 	
 	private boolean isModifiedSince() {
-		String[] lines = this.headers.split("\r\n");
-		for (String line : lines) {
-			if (line.toLowerCase().contains("if-modified-since")) {
-				Date dateToCheck = tryParse(line);
+		for (String header : this.headers) {
+			if (header.toLowerCase().contains("if-modified-since")) {
+				Date dateToCheck = tryParse(header);
 				if (dateToCheck == null)
-					System.out.println("Wrongly parsed date: "+ line);
+					System.out.println("Wrongly parsed date: "+ header);
 				// if the dateToCheck (from client) is later than the date when the file got last modified,
 				//		then return that file hasn't been modified.
 				else if (dateToCheck.after(Server.getLastModified(this.file.getPath()))) {
@@ -73,12 +76,13 @@ public class Get implements Command {
 	
 	@Override
 	public void addHeaders(String header) {
-		this.headers.concat(header + "\r\n");
+		this.headers.add(header);
+		System.out.println("Adding header: "+ header);
 	}
 
 	@Override
-	public void addBody(String readLine) {
-		// TODO Auto-generated method stub
+	public void addBody(String bodyLine) {
+		System.out.println("Nog niet geïmplementeerd");
 		
 	}
 	

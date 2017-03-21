@@ -1,6 +1,9 @@
 package http_commands;
 
 import java.io.*;
+import java.util.Date;
+
+import server.Server;
 
 public class Head implements Command {
 
@@ -12,7 +15,8 @@ public class Head implements Command {
 
 	@Override
 	public void getResponse(DataOutputStream outToClient) throws IOException {
-		outToClient.writeBytes("HTTP/1.1 200 OK");
+		outToClient.writeBytes("HTTP/1.1 200 OK"+
+								"Date: "+Server.DATE_FORMAT.format(new Date()));
 		BufferedReader br = new BufferedReader(new FileReader(file));
 		boolean head = true;
 		String line;

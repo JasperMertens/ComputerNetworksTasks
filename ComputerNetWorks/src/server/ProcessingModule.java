@@ -34,6 +34,7 @@ public class ProcessingModule implements Runnable {
 				while (!inFromClientIsEmpty()) {
 					Command c = CommandFactory.parseToCommand(this.inFromClient);
 					if (c != null) {
+						System.out.println("Getting response");
 						c.getResponse(this.outToClient);
 					}
 				}
@@ -62,7 +63,7 @@ public class ProcessingModule implements Runnable {
 	private void waitForInput() throws InterruptedException, IOException {
 		while (inFromClientIsEmpty()) {
 			Thread.sleep(1000);
-//			checkTimer();
+			checkTimer();
 		}
 	}
 	

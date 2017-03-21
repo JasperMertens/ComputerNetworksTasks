@@ -2,6 +2,8 @@ package server;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -13,13 +15,14 @@ public class Server {
 	public static final String[] DATE_FORMAT_STRINGS = {"E, d M y H:m:s z",
 														"E, d-M-y H:m:s z",
 														"E, M d H:m:s y"};
+	public static final DateFormat DATE_FORMAT = new SimpleDateFormat(Server.DATE_FORMAT_STRINGS[0]);
 	static ServerSocket welcomeSocket;
 	static Socket connectionSocket;
 	private static Map<String, Date> modifiedDatesMap = new HashMap<>();
 
 	public static void main(String argv[]) {
 		try {
-			welcomeSocket = new ServerSocket(6789);
+			welcomeSocket = new ServerSocket(80);
 			welcomeSocket.setReuseAddress(true); //om sneller opnieuw te kunnen gebruiken om te testen
 			while (true) {
 				if (nbOfClients < MAX_NB_OF_CLIENTS) {
