@@ -121,6 +121,7 @@ public class Client {
 		System.out.println("first line: "+ firstLine);
 		String result = firstLine.substring(9, 12);
 		System.out.println("Received code: "+ result);
+		System.out.println("Server: "+inFromServer.readLine());
 		return Integer.parseInt(result);
 	}
 	
@@ -141,6 +142,7 @@ public class Client {
 	}
 	
 	private void handleInput(URL uri, String host, int port) throws Exception {
+		int code = 0;
 		String path = System.getProperty("user.dir")+FILE_SEP+"src"+FILE_SEP+"client"+uri.getPath();
 		File file = new File(path);
 		System.out.println("path: "+file.getPath());
@@ -150,9 +152,12 @@ public class Client {
 		while (!body) {
 			String line = inFromServer.readLine();
 			System.out.println("FROM SERVER: " + line);
+			if (line.contains("HTTP/")) {
+				code = Integer.parseInt(line.substring(9, 12));
+			}
 			if (line.contains("Content-Length")) {
 				String[] ClengthAr = line.split("Content-Length *: *"); // * for zero or more spaces
-				cLength = Integer.parseInt(ClengthAr[1]); //geen klein cheatorke? (+2)
+				cLength = Integer.parseInt(ClengthAr[1]);
 			}
 			if (line.contains("Content-Type")) {
 				String[] CtypeAr = line.split("Content-Type *: *");
@@ -162,11 +167,16 @@ public class Client {
 			if ((line.length() == 0)) {
 				System.out.println("body start");
 				inFromServer.resetBytesRead();
+				if (code >= 300) {
+					inFromServer.skip(cLength);
+					cLength = 0;
+				}
 				body = true;
 			}
 		}
 		if (cType.contains("text")) {
 			System.out.println("Printing and writing text!");
+			if (cLength !=0)
 			printAndWriteText(file, host, port, cLength);
 		} else {
 			System.out.println("Writing Image!");
@@ -223,7 +233,7 @@ public class Client {
 			int ch = inFromServer.read();
 			//			System.out.println("buffercount: "+inFromServer.getBytesRead());
 			//			System.out.println("Clength:"+cLength);
-			if ((inFromServer.getBytesRead() >= clength)) {
+			if ((inFromServer.getBytesRead() > clength)) {
 				System.out.println("Document finished");
 				documentFinished = true;
 			}

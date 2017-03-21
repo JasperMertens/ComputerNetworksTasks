@@ -89,7 +89,7 @@ final class ExtendedBufferedInputStream extends BufferedInputStream {
         return line;
     }
     
-    // for CRLF
+    // for CRLF and CR
     private boolean isEndOfLine(int ch) throws IOException {
 		if (ch == CR || ch == -1){
 			return true;
@@ -97,12 +97,12 @@ final class ExtendedBufferedInputStream extends BufferedInputStream {
 		return false;
 	}
     
-    // for CRLF
+    // for CRLF and LF
     private boolean isEndOfLine(int ch, long limit) throws IOException {
     	if (getBytesRead() > limit) {
     		return true;
     	}
-    	else if (ch == CR || ch == -1){
+    	else if (ch == LF || ch == -1){
 			return true;
 		}
 		return false;
