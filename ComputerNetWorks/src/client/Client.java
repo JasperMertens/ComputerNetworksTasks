@@ -22,7 +22,7 @@ public class Client {
 	}
 	
 	public static void main(String[] args) {
-		String[] testArgs = {"HEAD", "http://www.google.com/index.html", "80"};
+		String[] testArgs = {"POST", "http://posttestserver.com/post.php", "80"};
 		try {
 			if (testArgs.length != 3)
 				throw new IllegalArgumentException("Wrong number of arguments!");
@@ -45,9 +45,9 @@ public class Client {
 			} else if (command.equals("HEAD")) {
 				head(uri, host, port);
 			} else if (command.equals("PUT")) {
-				put(uri, port);
+				put(uri, host, port);
 			} else if (command.equals("POST")) {
-				post(uri, port);
+				post(uri, host, port);
 			}
 		} catch (Exception e) {
 			this.clientSocket.close();
@@ -63,12 +63,23 @@ public class Client {
 		this.outToServer = new DataOutputStream(clientSocket.getOutputStream());
 	}
 
-	private static void post(URL uri, int port) {
-		// TODO Auto-generated method stub
+	private void post(URL uri, String host, int port) throws Exception {
 		
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+		System.out.println("What do you want to post: ");
+		String message = br.readLine();
+		String postMessage = "POST " + uri.getFile() + " HTTP/1.1" + "\r\n" +
+							 "Host: " + host + ":" + port + "\r\n"+
+							 "Content-Type: application/x-www-form-urlencoded \r\n" +   
+							 "Content-Length: " + message.getBytes("UTF-8").length + "\r\n\r\n"
+							 + message + "\r\n\r\n\r\n";
+		System.out.println(postMessage);
+		outToServer.writeBytes(postMessage);
+		int code = getCode();
+		handle("POST", uri, code, host, port);
 	}
 
-	private static void put(URL uri, int port) {
+	private void put(URL uri, String host, int port) {
 		// TODO Auto-generated method stub
 		
 	}
