@@ -22,7 +22,7 @@ public class Client {
 	}
 	
 	public static void main(String[] args) {
-		String[] testArgs = {"POST", "http://posttestserver.com/post.php", "80"};
+		String[] testArgs = {"GET", "http://tcpipguide.com/index.htm", "80"};
 		try {
 			if (testArgs.length != 3)
 				throw new IllegalArgumentException("Wrong number of arguments!");
@@ -64,7 +64,6 @@ public class Client {
 	}
 
 	private void post(URL uri, String host, int port) throws Exception {
-		
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		System.out.println("What do you want to post: ");
 		String message = br.readLine();
@@ -72,16 +71,26 @@ public class Client {
 							 "Host: " + host + ":" + port + "\r\n"+
 							 "Content-Type: application/x-www-form-urlencoded \r\n" +   
 							 "Content-Length: " + message.getBytes("UTF-8").length + "\r\n\r\n"
-							 + message + "\r\n\r\n\r\n";
+							 + message + "\r\n\r\n";
 		System.out.println(postMessage);
 		outToServer.writeBytes(postMessage);
 		int code = getCode();
 		handle("POST", uri, code, host, port);
 	}
 
-	private void put(URL uri, String host, int port) {
-		// TODO Auto-generated method stub
-		
+	private void put(URL uri, String host, int port) throws Exception {
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+		System.out.println("What do you want to put: ");		
+		String message = br.readLine();
+		String putMessage = "PUT " + uri.getFile() + " HTTP/1.1" + "\r\n" +
+							 "Host: " + host + ":" + port + "\r\n"+
+							 "Content-Type: application/x-www-form-urlencoded \r\n" +   
+							 "Content-Length: " + message.getBytes("UTF-8").length + "\r\n\r\n"
+							 + message + "\r\n\r\n";
+		System.out.println(putMessage);
+		outToServer.writeBytes(putMessage);
+		int code = getCode();
+		handle("PUT", uri, code, host, port);
 	}
 
 	private void get(URL uri, String host, int port) throws Exception {
