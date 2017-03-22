@@ -1,4 +1,7 @@
-package http_commands;
+package src.http_commands;
+
+import java.io.DataOutputStream;
+import java.io.IOException;
 
 public class Put implements Command {
 
@@ -7,9 +10,21 @@ public class Put implements Command {
 	}
 
 	@Override
-	public String getResponse() {
+	public void getResponse(DataOutputStream outToClient) throws IOException {
 		// TODO Auto-generated method stub
-		return null;
+		
+	}
+
+	@Override
+	public void addHeaders(String readLine) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void addBody(String readLine) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

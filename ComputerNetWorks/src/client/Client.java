@@ -1,8 +1,18 @@
-package client;
+package src.client;
 
-
-import java.io.*;
-import java.net.*;
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.net.Socket;
+import java.net.URL;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 
 import org.jsoup.Jsoup;
@@ -109,9 +119,13 @@ public class Client {
 	}
 
 	private void handle(String command, URL uri, int code, String host, int port) throws Exception {
-		if (code == 200) {
-			System.out.println("OK");
-			handleInput(uri, host, port, command);
+		if (code <= 200) {
+			if (command.equals("GET")) {
+			handleInput(uri, host, port);
+			} 
+			else if (command.equals("HEAD")) {
+				printBuffer();
+			}
 			System.out.println("sluit zakske");	
 			clientSocket.close();
 		}
@@ -141,7 +155,6 @@ public class Client {
 		System.out.println("FROM SERVER: "+ firstLine);
 		String result = firstLine.substring(9, 12);
 		System.out.println("Received code: "+ result);
-//		System.out.println("Server: "+inFromServer.readLine());
 		return Integer.parseInt(result);
 	}
 	
@@ -161,9 +174,9 @@ public class Client {
 		throw new Exception("No location found");
 	}
 	
-	private void handleInput(URL uri, String host, int port, String command) throws Exception {
+	private void handleInput(URL uri, String host, int port) throws Exception {
 		int code = 0;
-		String path = System.getProperty("user.dir")+FILE_SEP+"src"+FILE_SEP+"client"+uri.getPath();
+		String path = System.getProperty("user.dir")+FILE_SEP+"webpages"+uri.getPath();
 		File file = new File(path);
 		System.out.println("path: "+file.getPath());
 		int cLength = 0;
@@ -178,6 +191,7 @@ public class Client {
 			if (line.contains("Content-Length")) {
 				String[] ClengthAr = line.split("Content-Length *: *"); // * for zero or more spaces
 				cLength = Integer.parseInt(ClengthAr[1]);
+				System.out.println("Found content length: "+ cLength);
 			}
 			if (line.contains("Content-Type")) {
 				String[] CtypeAr = line.split("Content-Type *: *");
@@ -187,7 +201,7 @@ public class Client {
 			if ((line.length() == 0)) {
 				System.out.println("body start");
 				inFromServer.resetBytesRead();
-				if ((code >= 300) || (command == "HEAD")) {
+				if ((code >= 300)) {
 					inFromServer.skip(cLength);
 					cLength = 0;
 				}
@@ -196,8 +210,9 @@ public class Client {
 		}
 		if (cType.contains("text")) {
 			System.out.println("Printing and writing text!");
-			if (cLength !=0)
-			printAndWriteText(file, host, port, cLength);
+			if (cLength !=0) {
+				printAndWriteText(file, host, port, cLength);
+			}
 		} else {
 			System.out.println("Writing Image!");
 			File directory = new File(file.getParentFile().getAbsolutePath());
@@ -239,7 +254,7 @@ public class Client {
 		bw.close();
 		for (String imgUrl : imgUrls) {
 			URL url = new URL("http://"+host + "/" + imgUrl);
-			handleInput(url, host, port, "GET");
+			handleInput(url, host, port);
 		}
 		inFromServer.close();
 		System.out.println("Written to file.");
@@ -264,6 +279,14 @@ public class Client {
 			}
 		}
 		os.close();
+	}
+	
+	private void printBuffer() throws IOException {
+		String line;
+		while ((line = inFromServer.readLine()) != null) {
+			System.out.println(line);
+		}
+		
 	}
 	
 }
