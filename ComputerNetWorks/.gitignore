@@ -1,8 +1,5 @@
-<<<<<<< HEAD
 .project
 .classpath
-=======
->>>>>>> ClientBranch
 *.html
 webPage.txt
 *.class

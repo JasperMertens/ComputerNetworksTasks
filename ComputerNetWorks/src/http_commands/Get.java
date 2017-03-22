@@ -36,7 +36,8 @@ public class Get implements Command {
 									"Content-Type: text/html"+"\r\n" +
 									"Date: "+Server.DATE_FORMAT.format(new Date())+ "\r\n\r\n"
 									);
-			String path = FILE_SEP +  "src" + FILE_SEP+ "client" + file.getPath();
+//			String path = FILE_SEP +  "src" + FILE_SEP+ "client" + file.getPath();
+			String path = file.getPath();
 			System.out.println("Loser: "+System.getProperty("user.dir")+path);
 			BufferedInputStream br = new BufferedInputStream(new FileInputStream(System.getProperty("user.dir")+path));
 			int ch;
