@@ -30,7 +30,7 @@ public class Get implements Command {
 			outToClient.writeBytes("HTTP/1.1 400 Bad Request\r\n");
 		} else if (!isModifiedSince()) {
 			outToClient.writeBytes(	"HTTP/1.1 304 Not Modified\r\n"+
-									"Date: "+Server.DATE_FORMAT.format(new Date()));
+									"Date: "+Server.getDate());
 		} else {
 			outToClient.writeBytes(	"HTTP/1.1 200 OK\r\n"+
 									"Content-Length: "+file.length()+"\r\n"+
@@ -56,11 +56,13 @@ public class Get implements Command {
 		for (String header : this.headers) {
 			if (header.toLowerCase().contains("if-modified-since")) {
 				Date dateToCheck = tryParse(header);
-				if (dateToCheck == null)
+				Date lastModified = Server.getLastModified(file.getPath());
+				if (dateToCheck == null) {
 					System.out.println("Wrongly parsed date: "+ header);
+				}
 				// if the dateToCheck (from client) is later than the date when the file got last modified,
 				//		then return that file hasn't been modified.
-				else if (dateToCheck.after(Server.getLastModified(this.file.getPath()))) {
+				else if (lastModified == null || dateToCheck.after(lastModified)) {
 					return false;
 				}
 				return true;

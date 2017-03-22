@@ -117,10 +117,9 @@ public class Client {
 		inFromServer.mark(100);
 		String firstLine = inFromServer.readLine();
 		inFromServer.reset();
-		System.out.println("first line: "+ firstLine);
+		System.out.println("FROM SERVER: "+ firstLine);
 		String result = firstLine.substring(9, 12);
 		System.out.println("Received code: "+ result);
-		System.out.println("Server: "+inFromServer.readLine());
 		return Integer.parseInt(result);
 	}
 	
@@ -157,6 +156,7 @@ public class Client {
 			if (line.contains("Content-Length")) {
 				String[] ClengthAr = line.split("Content-Length *: *"); // * for zero or more spaces
 				cLength = Integer.parseInt(ClengthAr[1]);
+				System.out.println("Found content length: "+ cLength);
 			}
 			if (line.contains("Content-Type")) {
 				String[] CtypeAr = line.split("Content-Type *: *");

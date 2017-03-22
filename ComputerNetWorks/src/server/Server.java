@@ -42,6 +42,7 @@ public class Server {
 		}
 
 		finally {
+			System.out.println("Closing server sockets");
 			welcomeSocket.close();
 			connectionSocket.close();
 		}
