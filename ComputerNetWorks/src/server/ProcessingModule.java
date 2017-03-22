@@ -43,6 +43,15 @@ public class ProcessingModule implements Runnable {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		finally {
+			System.out.println("Closing ProcessingModule's socket");
+			try {
+				connectionSocket.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 	}
 
 	private boolean inFromClientIsEmpty() {

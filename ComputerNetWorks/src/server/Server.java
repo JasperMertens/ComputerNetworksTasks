@@ -21,7 +21,7 @@ public class Server {
 														"E, M d H:m:s y"};
 	public static final DateFormat DATE_FORMAT = new SimpleDateFormat(Server.DATE_FORMAT_STRINGS[0], Locale.ENGLISH);
 	static ServerSocket welcomeSocket;
-	static Socket connectionSocket;
+//	static Socket connectionSocket;
 	private static Map<String, Date> modifiedDatesMap = new HashMap<>();
 
 	public static void main(String argv[]) throws IOException {
@@ -30,7 +30,7 @@ public class Server {
 			welcomeSocket.setReuseAddress(true); //om sneller opnieuw te kunnen gebruiken om te testen
 			while (true) {
 				if (nbOfClients < MAX_NB_OF_CLIENTS) {
-					connectionSocket = welcomeSocket.accept();
+					Socket connectionSocket = welcomeSocket.accept();
 					System.out.println("Accepted");
 					nbOfClients += 1;
 					Thread t = new Thread(new ProcessingModule(connectionSocket));
@@ -44,7 +44,7 @@ public class Server {
 		finally {
 			System.out.println("Closing server sockets");
 			welcomeSocket.close();
-			connectionSocket.close();
+//			connectionSocket.close();
 		}
 	}
 	

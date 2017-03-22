@@ -21,7 +21,7 @@ public class Client {
 	}
 	
 	public static void main(String[] args) {
-		String[] testArgs = {"GET", "http://www.tcpipguide.com/index.htm", "80"};
+		String[] testArgs = {"HEAD", "http://www.tcpipguide.com/index.htm", "80"};
 		try {
 			if (testArgs.length != 3)
 				throw new IllegalArgumentException("Wrong number of arguments!");
@@ -88,9 +88,13 @@ public class Client {
 	}
 
 	private void handle(String command, URL uri, int code, String host, int port) throws Exception {
-		if (code == 200) {
-			System.out.println("OK");
+		if (code <= 200) {
+			if (command.equals("GET")) {
 			handleInput(uri, host, port);
+			} 
+			else if (command.equals("HEAD")) {
+				printBuffer();
+			}
 			System.out.println("sluit zakske");	
 			clientSocket.close();
 		}
@@ -175,8 +179,9 @@ public class Client {
 		}
 		if (cType.contains("text")) {
 			System.out.println("Printing and writing text!");
-			if (cLength !=0)
-			printAndWriteText(file, host, port, cLength);
+			if (cLength !=0) {
+				printAndWriteText(file, host, port, cLength);
+			}
 		} else {
 			System.out.println("Writing Image!");
 			File directory = new File(file.getParentFile().getAbsolutePath());
@@ -243,6 +248,14 @@ public class Client {
 			}
 		}
 		os.close();
+	}
+	
+	private void printBuffer() throws IOException {
+		String line;
+		while ((line = inFromServer.readLine()) != null) {
+			System.out.println(line);
+		}
+		
 	}
 	
 }
