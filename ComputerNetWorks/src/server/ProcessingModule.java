@@ -67,7 +67,7 @@ public class ProcessingModule implements Runnable {
 			this.inFromClient.mark(100);
 			String line = this.inFromClient.readLine();
 			this.inFromClient.reset();
-			if (line == null) {
+			if (line.length() == 0) {
 				return true;
 			}
 		} catch (IOException e) {

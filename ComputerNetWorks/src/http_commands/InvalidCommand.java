@@ -28,4 +28,10 @@ public class InvalidCommand implements Command {
 		
 	}
 
+	@Override
+	public boolean hasBody() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 }

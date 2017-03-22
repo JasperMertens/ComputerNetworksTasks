@@ -43,15 +43,21 @@ public class CommandFactory {
 		}
 		System.out.println("Parsing firstLine: "+firstLine);
 		Command cmd = parseFirstLine(firstLine);
+		long cLength = 0;
 		while(!endOfHeaders(inFromClient)) {
 			String nextLine = inFromClient.readLine();
+			if (nextLine.contains("Content-Length")) {
+				String[] ClengthAr = nextLine.split("Content-Length *: *"); // * for zero or more spaces
+				cLength = Integer.parseInt(ClengthAr[1]);
+				System.out.println("Found content length: "+ cLength);
+			}
 			System.out.println("Parsing: "+ nextLine);
 			cmd.addHeaders(nextLine);
 		}
 		System.out.println("letste reigel lejug? "+(inFromClient.readLine().length() == 0));
-//		while(!endOfRequest(inFromClient)) {
-//			cmd.addBody(inFromClient.readLine());
-//		}
+		while(cmd.hasBody() && !endOfRequest(inFromClient)) {
+			cmd.addBody(inFromClient.readLine());
+		}
 		System.out.println("Command created!");
 		return cmd;
 	}
@@ -68,7 +74,7 @@ public class CommandFactory {
 		} else if (commandStr.equals("PUT")) {
 			result = new Put();
 		} else if (commandStr.equals("POST")) {
-			result = new Post();
+			result = new Post(file);
 		} else 
 			System.out.println("Wrong command: "+commandStr);
 		return result;

@@ -96,6 +96,12 @@ public class Get implements Command {
 		System.out.println("Nog niet geïmplementeerd");
 		
 	}
+
+	@Override
+	public boolean hasBody() {
+		// TODO Auto-generated method stub
+		return false;
+	}
 	
 	
 }

@@ -9,5 +9,7 @@ public interface Command {
 	public void addHeaders(String readLine);
 
 	public void addBody(String readLine);
+	
+	public boolean hasBody();
 
 }
