@@ -1,2 +1,14 @@
-/client/
-/server/
+<<<<<<< HEAD
+.project
+.classpath
+=======
+>>>>>>> ClientBranch
+*.html
+webPage.txt
+*.class
+/bin/
+.classpath
+.project
+*.gif
+*.png
+

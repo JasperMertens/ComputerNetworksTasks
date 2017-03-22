@@ -1,8 +1,10 @@
-package http_commands;
+package src.http_commands;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.text.ParseException;
@@ -10,10 +12,11 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
-import server.Server;
+import src.server.Server;
 
 public class Get implements Command {
-
+	
+	public final static String FILE_SEP = System.getProperty("file.separator");
 	private File file;
 	private ArrayList<String> headers = new ArrayList<>();
 
@@ -30,14 +33,15 @@ public class Get implements Command {
 									"Date: "+Server.DATE_FORMAT.format(new Date()));
 		} else {
 			outToClient.writeBytes(	"HTTP/1.1 200 OK\r\n"+
-									"Date: "+Server.DATE_FORMAT.format(new Date())+ "\r\n\r\n");
-			String path = file.getPath();
+									"Content-Type: text/html"+"\r\n" +
+									"Date: "+Server.DATE_FORMAT.format(new Date())+ "\r\n\r\n"
+									);
+			String path = FILE_SEP +  "src" + FILE_SEP+ "client" + file.getPath();
 			System.out.println("Loser: "+System.getProperty("user.dir")+path);
-			BufferedReader br = new BufferedReader(new FileReader(System.getProperty("user.dir")+path));
-			String line;
-			while ((line = br.readLine()) != null) {
-				System.out.println(line);
-				outToClient.writeBytes(line);
+			BufferedInputStream br = new BufferedInputStream(new FileInputStream(System.getProperty("user.dir")+path));
+			int ch;
+			while ((ch = br.read()) != -1) {
+				outToClient.write(ch);
 			}
 		}
 	}

@@ -1,9 +1,9 @@
-package http_commands;
+package src.http_commands;
 
 import java.io.*;
 import java.util.Date;
 
-import server.Server;
+import src.server.Server;
 
 public class Head implements Command {
 

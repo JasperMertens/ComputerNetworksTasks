@@ -1,4 +1,4 @@
-package server;
+package src.server;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -6,8 +6,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
 
-import http_commands.Command;
-import http_commands.CommandFactory;
+import src.http_commands.Command;
+import src.http_commands.CommandFactory;
 
 
 public class ProcessingModule implements Runnable {
@@ -63,7 +63,7 @@ public class ProcessingModule implements Runnable {
 	private void waitForInput() throws InterruptedException, IOException {
 		while (inFromClientIsEmpty()) {
 			Thread.sleep(1000);
-			checkTimer();
+//			checkTimer();
 		}
 	}
 	

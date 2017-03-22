@@ -1,4 +1,4 @@
-package http_commands;
+package src.http_commands;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
