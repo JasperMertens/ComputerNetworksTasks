@@ -21,7 +21,6 @@ public class Server {
 														"E, M d H:m:s y"};
 	public static final DateFormat DATE_FORMAT = new SimpleDateFormat(Server.DATE_FORMAT_STRINGS[0], Locale.ENGLISH);
 	static ServerSocket welcomeSocket;
-//	static Socket connectionSocket;
 	private static Map<String, Date> modifiedDatesMap = new HashMap<>();
 
 	public static void main(String argv[]) throws IOException {

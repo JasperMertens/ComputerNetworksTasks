@@ -48,8 +48,12 @@ public class Get implements Command {
 	}
 	
 	private boolean hasLegalHostHeader() {
-		return true;
-//		return (this.headers.toLowerCase().contains("host"));
+		for (String header: this.headers) {
+			if (header.toLowerCase().contains("host")) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	private boolean isModifiedSince() {

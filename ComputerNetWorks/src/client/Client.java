@@ -32,7 +32,7 @@ public class Client {
 	}
 	
 	public static void main(String[] args) {
-		String[] testArgs = {"GET", "http://tcpipguide.com/index.htm", "80"};
+		String[] testArgs = {"GET", "http://localhost/index.htm", "80"};
 		try {
 			if (testArgs.length != 3)
 				throw new IllegalArgumentException("Wrong number of arguments!");
@@ -176,7 +176,7 @@ public class Client {
 	
 	private void handleInput(URL uri, String host, int port) throws Exception {
 		int code = 0;
-		String path = System.getProperty("user.dir")+FILE_SEP+"webpages"+uri.getPath();
+		String path = System.getProperty("user.dir")+FILE_SEP+"webpages_client"+uri.getPath();
 		File file = new File(path);
 		System.out.println("path: "+file.getPath());
 		int cLength = 0;
@@ -187,6 +187,7 @@ public class Client {
 			System.out.println("FROM SERVER: " + line);
 			if (line.contains("HTTP/")) {
 				code = Integer.parseInt(line.substring(9, 12));
+				System.out.println("code found: "+code);
 			}
 			if (line.contains("Content-Length")) {
 				String[] ClengthAr = line.split("Content-Length *: *"); // * for zero or more spaces
@@ -199,7 +200,7 @@ public class Client {
 				System.out.println("Found content type: "+cType);
 			}
 			if ((line.length() == 0)) {
-				System.out.println("body start");
+				System.out.println("body start " + cLength + " " + cType);
 				inFromServer.resetBytesRead();
 				if ((code >= 300)) {
 					inFromServer.skip(cLength);
@@ -208,7 +209,7 @@ public class Client {
 				body = true;
 			}
 		}
-		if (cType.contains("text")) {
+		if (cType!=null && cType.contains("text")) {
 			System.out.println("Printing and writing text!");
 			if (cLength !=0) {
 				printAndWriteText(file, host, port, cLength);
