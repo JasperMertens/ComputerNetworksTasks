@@ -21,7 +21,7 @@ public class Client {
 	}
 	
 	public static void main(String[] args) {
-		String[] testArgs = {"GET", "http://www.tldp.org/index.html", "80"};
+		String[] testArgs = {"GET", "http://www.tcpipguide.com/index.htm", "80"};
 		try {
 			if (testArgs.length != 3)
 				throw new IllegalArgumentException("Wrong number of arguments!");
@@ -142,7 +142,7 @@ public class Client {
 	
 	private void handleInput(URL uri, String host, int port) throws Exception {
 		int code = 0;
-		String path = System.getProperty("user.dir")+FILE_SEP+"src"+FILE_SEP+"client"+uri.getPath();
+		String path = System.getProperty("user.dir")+FILE_SEP+"webpages"+uri.getPath();
 		File file = new File(path);
 		System.out.println("path: "+file.getPath());
 		int cLength = 0;

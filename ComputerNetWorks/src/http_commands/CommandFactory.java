@@ -59,7 +59,7 @@ public class CommandFactory {
 	private static Command parseFirstLine(String firstLine) {
 		String commandStr = getCommand(firstLine);
 		String filePath = getFilePath(firstLine);
-		File file = new File(filePath);
+		File file = new File(System.getProperty("user.dir")+FILE_SEP+"webpages"+filePath);
 		Command result = null;
 		if (commandStr.equals("GET")) {
 			result = new Get(file);

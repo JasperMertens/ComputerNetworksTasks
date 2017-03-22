@@ -1,12 +1,12 @@
 package src.http_commands;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -33,13 +33,13 @@ public class Get implements Command {
 									"Date: "+Server.DATE_FORMAT.format(new Date()));
 		} else {
 			outToClient.writeBytes(	"HTTP/1.1 200 OK\r\n"+
-									"Content-Type: text/html"+"\r\n" +
-									"Date: "+Server.DATE_FORMAT.format(new Date())+ "\r\n\r\n"
+									"Content-Length: "+file.length()+"\r\n"+
+									"Content-Type: "+Files.probeContentType(Paths.get(file.getAbsolutePath()))+"\r\n" +
+									"Date: "+Server.getDate()+ "\r\n\r\n"
 									);
-//			String path = FILE_SEP +  "src" + FILE_SEP+ "client" + file.getPath();
 			String path = file.getPath();
-			System.out.println("Loser: "+System.getProperty("user.dir")+path);
-			BufferedInputStream br = new BufferedInputStream(new FileInputStream(System.getProperty("user.dir")+path));
+			System.out.println("Loser: "+path);
+			BufferedInputStream br = new BufferedInputStream(new FileInputStream(path));
 			int ch;
 			while ((ch = br.read()) != -1) {
 				outToClient.write(ch);
